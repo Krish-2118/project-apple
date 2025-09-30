@@ -43,11 +43,13 @@ function ResultsPageContent() {
   useEffect(() => {
     const resultsJson = sessionStorage.getItem('analysisResults');
     if (resultsJson) {
-      setResults(JSON.parse(resultsJson));
-      // Optional: clear the session storage after reading
-      // sessionStorage.removeItem('analysisResults');
+      try {
+        setResults(JSON.parse(resultsJson));
+      } catch (error) {
+        console.error("Failed to parse analysis results:", error);
+        router.replace('/dashboard/tools');
+      }
     } else {
-      // If no results are found, redirect back to the start
       router.replace('/dashboard/tools');
     }
   }, [router]);
@@ -107,7 +109,7 @@ function ResultsPageContent() {
                     <CardTitle className="text-xl font-headline">Yield Prediction</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                    <p className="text-6xl font-bold text-primary">{yieldResult.predictedYieldTonnesPerAcre.toFixed(2)}</p>
+                    <p className="text-7xl font-bold text-primary">{yieldResult.predictedYieldTonnesPerAcre.toFixed(2)}</p>
                     <p className="text-muted-foreground font-medium">Tonnes / Acre</p>
                 </CardContent>
             </Card>

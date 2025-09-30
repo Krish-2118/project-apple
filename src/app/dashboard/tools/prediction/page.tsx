@@ -248,11 +248,17 @@ function PredictionPageContent() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {[...new Set(cropTypes)].map((c) => (
-                            <SelectItem key={c} value={c}>
-                              {c}
-                            </SelectItem>
-                          ))}
+                          {[...new Set(cropTypes)].map((c) => {
+                             const emoji = cropEmojis[c.toLowerCase() as keyof typeof cropEmojis] || cropEmojis['default'];
+                             return (
+                                <SelectItem key={c} value={c}>
+                                  <div className="flex items-center gap-2">
+                                    <span>{emoji}</span>
+                                    <span>{c}</span>
+                                  </div>
+                                </SelectItem>
+                             )
+                          })}
                         </SelectContent>
                       </Select>
                       <FormMessage />
