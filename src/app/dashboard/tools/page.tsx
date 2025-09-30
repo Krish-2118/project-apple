@@ -29,7 +29,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { BrainCircuit, Loader2, Sparkles, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getCropRecommendation, CropRecommendationOutput } from "@/ai/flows/crop-recommendation";
@@ -69,7 +68,7 @@ export default function ToolsPage() {
 
   const recommendationForm = useForm<RecommendationFormValues>({
     resolver: zodResolver(recommendationSchema),
-    defaultValues: { state: 'Odisha', rainfall: 1500, temperature: 28, ph: 6.5 },
+    defaultValues: { state: 'Odisha', soilType: 'Alluvial', rainfall: 1500, temperature: 28, ph: 6.5 },
   });
 
   const handleGetRecommendations = async (values: RecommendationFormValues) => {
@@ -140,7 +139,7 @@ export default function ToolsPage() {
                                         <p className="text-sm text-muted-foreground mt-1 flex-grow">{rec.reason}</p>
                                       </CardContent>
                                       <div className="flex items-center justify-center text-primary font-semibold text-sm p-3 bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                                          <span>Predict Yield</span>
+                                          <span>Analyze This Crop</span>
                                           <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
                                       </div>
                                   </Card>
