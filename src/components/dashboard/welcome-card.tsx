@@ -15,7 +15,7 @@ export function WelcomeCard() {
           Welcome back, {user?.name || "Farmer"}!
         </CardTitle>
         <CardDescription>
-          Here's your farm's overview for today. Let's make it a productive one.
+          Your farm is looking great. Here's what's happening today.
         </CardDescription>
       </CardHeader>
     </Card>

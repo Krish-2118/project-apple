@@ -7,15 +7,25 @@ import { InventoryCard } from "@/components/dashboard/inventory-card";
 
 export default function DashboardPage() {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <div className="lg:col-span-3">
-        <WelcomeCard />
-      </div>
-      <WeatherCard />
-      <YieldPredictionCard />
-      <AlertsCard />
-      <CropCalendarCard />
-      <InventoryCard />
+    <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
+        <div className="lg:col-span-4">
+            <WelcomeCard />
+        </div>
+        <div className="lg:col-span-2">
+            <WeatherCard />
+        </div>
+        <div className="lg:col-span-2">
+            <AlertsCard />
+        </div>
+        <div className="lg:col-span-4">
+            <YieldPredictionCard />
+        </div>
+        <div className="lg:col-span-2">
+            <CropCalendarCard />
+        </div>
+        <div className="lg:col-span-2">
+            <InventoryCard />
+        </div>
     </div>
   );
 }

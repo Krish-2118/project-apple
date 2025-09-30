@@ -90,7 +90,7 @@ export default function CommunityPage() {
           <Card key={q.id}>
             <CardContent className="pt-6">
               <div className="flex gap-4">
-                <Avatar>
+                <Avatar className="transition-transform transform hover:scale-110">
                   <AvatarFallback>{q.avatar}</AvatarFallback>
                 </Avatar>
                 <div className="w-full">

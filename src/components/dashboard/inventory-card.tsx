@@ -87,13 +87,19 @@ export function InventoryCard() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
+                 <Button variant="ghost" size="icon" onClick={() => handleUpdate(item.name, -5)}>
+                    <MinusCircle className="w-5 h-5"/>
+                 </Button>
                 <Progress value={(item.quantity / item.capacity) * 100} className="h-2" />
+                <Button variant="ghost" size="icon" onClick={() => handleUpdate(item.name, 5)}>
+                    <PlusCircle className="w-5 h-5"/>
+                 </Button>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" onClick={() => {
                     setSelectedItem(item);
                     setUpdateValue(item.quantity)
                     }}>
-                    Update
+                    Set
                   </Button>
                 </DialogTrigger>
               </div>

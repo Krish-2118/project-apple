@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Bot, Leaf, Zap, HeartHandshake, Languages, ScanLine } from "lucide-react";
+import { ArrowRight, Bot, Leaf, Zap, HeartHandshake, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -19,11 +19,6 @@ export default function LandingPage() {
       icon: <Zap className="w-8 h-8 text-primary" />,
       title: "Intelligent Agricultural Alerts",
       description: "Receive timely, actionable advice based on weather forecasts to protect your crops.",
-    },
-    {
-      icon: <ScanLine className="w-8 h-8 text-primary" />,
-      title: "Crop Disease Scanner",
-      description: "Upload an image of your crop to detect diseases and get instant health analysis.",
     },
     {
       icon: <Leaf className="w-8 h-8 text-primary" />,
@@ -79,7 +74,7 @@ export default function LandingPage() {
                 IndiFarm AI empowers Indian farmers with AI-driven tools and data-driven insights to enhance productivity and profitability.
               </p>
               <div className="mt-10">
-                <Button size="lg" asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Button size="lg" asChild>
                   <Link href="/dashboard">
                     Get Started <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
@@ -99,9 +94,9 @@ export default function LandingPage() {
                 Our platform provides a suite of tools designed for the modern Indian farmer.
               </p>
             </div>
-            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
               {features.map((feature, index) => (
-                <Card key={index} className="bg-card/80 backdrop-blur-sm transform hover:-translate-y-2 transition-transform duration-300 lg:col-span-1">
+                <Card key={index} className="bg-card/80 backdrop-blur-sm transform hover:-translate-y-2 transition-transform duration-300">
                   <CardHeader className="items-center">
                     {feature.icon}
                     <CardTitle className="text-center mt-4 font-headline">{feature.title}</CardTitle>
