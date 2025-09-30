@@ -4,7 +4,6 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
-  ChevronRight,
   Lightbulb,
   Loader2,
   MapPin,
@@ -25,8 +24,24 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getPlaceHolderImage } from '@/lib/placeholder-images';
-import type { ResultsData } from '../prediction/page';
+import type { MarketAnalysisOutput } from '@/ai/flows/market-analysis';
+import type { PredictYieldOutput } from '@/ai/flows/yield-prediction';
+import type { YieldEnhancementOutput } from '@/ai/flows/yield-enhancement';
 import { Separator } from '@/components/ui/separator';
+
+export interface ResultsData {
+  yieldResult: PredictYieldOutput;
+  marketResult: MarketAnalysisOutput;
+  tipsResult: YieldEnhancementOutput;
+  crop: string;
+  params: {
+    soilType: string;
+    state: string;
+    rainfall: string;
+    temperature: string;
+    ph: string;
+  }
+}
 
 const cropEmojis: { [key: string]: string } = {
   rice: '🌾',
@@ -73,9 +88,9 @@ function ResultsPageContent() {
 
   if (!results) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <div className="flex flex-col justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-4">Loading results...</p>
+        <p className="ml-4 mt-4">Loading analysis results...</p>
       </div>
     );
   }
@@ -109,12 +124,12 @@ function ResultsPageContent() {
               Analysis Report for {crop}
             </CardTitle>
             <CardDescription>
-              AI-powered insights for your crop based on the provided parameters.
+              AI-powered insights based on your farm's parameters.
             </CardDescription>
           </div>
         </div>
         {params && (
-         <div className="grid grid-cols-2 md:grid-cols-4 text-center text-sm p-4 bg-muted/50 border-t">
+         <div className="grid grid-cols-2 md:grid-cols-4 text-center text-sm p-4 bg-muted/50 border-t gap-y-4">
             <div className="flex flex-col items-center gap-1"><Mountain className="w-5 h-5 text-muted-foreground"/><div><span className="font-semibold">{params.soilType}</span><p className="text-xs text-muted-foreground">Soil</p></div></div>
             <div className="flex flex-col items-center gap-1"><Cloudy className="w-5 h-5 text-muted-foreground"/><div><span className="font-semibold">{params.rainfall}mm</span><p className="text-xs text-muted-foreground">Rainfall</p></div></div>
             <div className="flex flex-col items-center gap-1"><Thermometer className="w-5 h-5 text-muted-foreground"/><div><span className="font-semibold">{params.temperature}°C</span><p className="text-xs text-muted-foreground">Temp</p></div></div>
@@ -144,9 +159,9 @@ function ResultsPageContent() {
                      <Separator />
                     <div>
                         <h4 className="font-semibold mb-2">Nearby Mandi Prices:</h4>
-                        <div className="space-y-2 text-sm">
+                        <div className="space-y-2 text-sm p-3 rounded-md bg-muted/50">
                         {marketResult.mandiPrices.map((mandi, index) => (
-                            <div key={index} className="flex justify-between p-2 rounded-md bg-muted/50">
+                            <div key={index} className="flex justify-between">
                                 <span className="flex items-center gap-2"><MapPin className="w-4 h-4"/> {mandi.mandiName}</span>
                                 <span className="font-mono font-semibold">{mandi.price}</span>
                             </div>
@@ -190,6 +205,7 @@ export default function ResultsPage() {
         <Suspense fallback={
             <div className="flex justify-center items-center h-full">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="ml-4">Loading analysis results...</p>
             </div>
           }>
             <ResultsPageContent />

@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import Image from 'next/image';
 import { format } from 'date-fns';
 
 import {
@@ -33,10 +32,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { BrainCircuit, Loader2, Sparkles, ArrowRight, Leaf, Sun, Droplets, Thermometer, Cloudy } from "lucide-react";
+import { BrainCircuit, Loader2, Sparkles, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getCropRecommendation, CropRecommendationOutput } from "@/ai/flows/crop-recommendation";
-import { getPlaceHolderImage } from '@/lib/placeholder-images';
 import type { ResultsData } from "./results/page";
 import { predictYield } from "@/ai/flows/yield-prediction";
 import { getMarketAnalysis } from "@/ai/flows/market-analysis";
@@ -141,9 +139,6 @@ export default function ToolsPage() {
     try {
       const result = await getCropRecommendation({
         ...values,
-        rainfall: Number(values.rainfall),
-        temperature: Number(values.temperature),
-        ph: Number(values.ph),
       });
       setRecommendations(result.recommendations);
     } catch (error) {
@@ -213,7 +208,6 @@ export default function ToolsPage() {
     }
   };
   
-  const placeholderImage = getPlaceHolderImage(selectedCrop || 'default');
   const cropEmoji = selectedCrop ? (cropEmojis[selectedCrop.toLowerCase()] || cropEmojis['default']) : '🌱';
 
   return (
@@ -228,13 +222,13 @@ export default function ToolsPage() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleFinalSubmit)} className="space-y-8">
+              <form onSubmit={form.handleSubmit(handleFinalSubmit)} className="space-y-6">
                 <div className="p-6 border rounded-lg space-y-6">
                     <h3 className="text-lg font-semibold flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" /> 
                         Step 1: Find the Best Crop for Your Land
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={form.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select your state" /></SelectTrigger></FormControl><SelectContent>{indianStates.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                       <FormField control={form.control} name="soilType" render={({ field }) => (<FormItem><FormLabel>Soil Type</FormLabel><Select onValueChange={field.onChange} value={field.value} key={watchState}><FormControl><SelectTrigger><SelectValue placeholder="Select soil type" /></SelectTrigger></FormControl><SelectContent>{availableSoils.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                       <FormField control={form.control} name="rainfall" render={({ field }) => ( <FormItem><FormLabel>Annual Rainfall (mm)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -253,7 +247,7 @@ export default function ToolsPage() {
                 )}
 
                 {recommendations && (
-                    <div className="p-6 border-2 border-primary/20 rounded-lg bg-primary/5 animate-in fade-in-50 duration-500">
+                    <div className="p-6 border-2 border-primary/20 rounded-lg bg-primary/5 animate-in fade-in-50 duration-500 space-y-6">
                         <h3 className="text-lg font-semibold mb-4">Step 2: Select a Crop to Analyze</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {recommendations.map(rec => {
