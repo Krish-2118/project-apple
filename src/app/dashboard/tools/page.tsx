@@ -53,12 +53,45 @@ const cropEmojis: { [key: string]: string } = {
   "default": "🌱",
 };
 
-const indianStates = ["Odisha", "Punjab", "Haryana", "Uttar Pradesh"];
+const indianStates = [
+  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", 
+  "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa", 
+  "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka", 
+  "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", 
+  "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", 
+  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+];
+
 const soilTypesByState: { [key: string]: string[] } = {
+    "Andhra Pradesh": ["Red", "Black", "Alluvial", "Laterite"],
+    "Arunachal Pradesh": ["Red", "Laterite", "Mountain"],
+    "Assam": ["Alluvial", "Red", "Laterite"],
+    "Bihar": ["Alluvial", "Terai"],
+    "Chhattisgarh": ["Red", "Yellow", "Black"],
+    "Goa": ["Laterite", "Red"],
+    "Gujarat": ["Black", "Alluvial", "Desert"],
+    "Haryana": ["Alluvial", "Sandy", "Clay"],
+    "Himachal Pradesh": ["Mountain", "Brown Forest"],
+    "Jharkhand": ["Red", "Laterite", "Alluvial"],
+    "Karnataka": ["Red", "Black", "Laterite"],
+    "Kerala": ["Laterite", "Red", "Alluvial", "Coastal"],
+    "Madhya Pradesh": ["Black", "Red", "Yellow", "Alluvial"],
+    "Maharashtra": ["Black", "Laterite", "Red", "Alluvial"],
+    "Manipur": ["Red", "Mountain", "Alluvial"],
+    "Meghalaya": ["Red", "Laterite"],
+    "Mizoram": ["Red", "Yellow", "Laterite"],
+    "Nagaland": ["Red", "Laterite", "Mountain"],
     "Odisha": ["Alluvial", "Red", "Laterite", "Black", "Coastal Saline"],
     "Punjab": ["Alluvial", "Sandy", "Loamy"],
-    "Haryana": ["Alluvial", "Sandy", "Clay"],
+    "Rajasthan": ["Desert", "Alluvial", "Red", "Black"],
+    "Sikkim": ["Mountain", "Brown Clay"],
+    "Tamil Nadu": ["Red", "Black", "Laterite", "Alluvial", "Coastal"],
+    "Telangana": ["Red", "Black", "Laterite"],
+    "Tripura": ["Red", "Yellow", "Laterite"],
     "Uttar Pradesh": ["Alluvial", "Black", "Red", "Loamy"],
+    "Uttarakhand": ["Mountain", "Brown Forest", "Terai"],
+    "West Bengal": ["Alluvial", "Red", "Laterite", "Coastal"],
+    "default": ["Alluvial", "Loamy", "Clay", "Sandy", "Peaty"]
 };
 
 const sowingMonths = [
@@ -89,18 +122,28 @@ export default function ToolsPage() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { state: 'Odisha', soilType: 'Alluvial', rainfall: 1500, temperature: 28, ph: 6.5 },
+    defaultValues: { state: 'Odisha', soilType: '', rainfall: 1500, temperature: 28, ph: 6.5 },
   });
 
   const watchState = form.watch('state');
-  const availableSoils = soilTypesByState[watchState] || [];
+  const availableSoils = soilTypesByState[watchState] || soilTypesByState['default'];
+  
+  // Reset soil type when state changes
+  React.useEffect(() => {
+    form.setValue('soilType', '');
+  }, [watchState, form]);
 
   const handleGetRecommendations = async (values: FormValues) => {
     setIsLoading(true);
     setRecommendations(null);
     setSelectedCrop(null);
     try {
-      const result = await getCropRecommendation(values);
+      const result = await getCropRecommendation({
+        ...values,
+        rainfall: Number(values.rainfall),
+        temperature: Number(values.temperature),
+        ph: Number(values.ph),
+      });
       setRecommendations(result.recommendations);
     } catch (error) {
       toast({ variant: "destructive", title: "Error", description: "Could not fetch crop recommendations." });
