@@ -111,12 +111,12 @@ export default function ToolsPage() {
                     </h3>
                     <Form {...recommendationForm}>
                         <form onSubmit={recommendationForm.handleSubmit(handleGetRecommendations)} className="space-y-4">
-                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <FormField control={recommendationForm.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled><FormControl><SelectTrigger><SelectValue placeholder="Select your state" /></SelectTrigger></FormControl><SelectContent>{indianStates.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                             <FormField control={recommendationForm.control} name="soilType" render={({ field }) => (<FormItem><FormLabel>Soil Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select soil type" /></SelectTrigger></FormControl><SelectContent>{odishaSoilTypes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                             <FormField control={recommendationForm.control} name="rainfall" render={({ field }) => ( <FormItem><FormLabel>Annual Rainfall (mm)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={recommendationForm.control} name="temperature" render={({ field }) => ( <FormItem><FormLabel>Avg. Temp (°C)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={recommendationForm.control} name="ph" render={({ field }) => ( <FormItem className="md:col-span-2 lg:col-span-4"><FormLabel>Soil pH</FormLabel><FormControl><Input type="number" step="0.1" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={recommendationForm.control} name="ph" render={({ field }) => ( <FormItem><FormLabel>Soil pH</FormLabel><FormControl><Input type="number" step="0.1" {...field} /></FormControl><FormMessage /></FormItem>)} />
                            </div>
                             <div className="flex justify-end">
                                 <Button type="submit" disabled={isLoading}>{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Get Recommendations</Button>
@@ -124,6 +124,12 @@ export default function ToolsPage() {
                         </form>
                     </Form>
                 </div>
+
+                {isLoading && (
+                    <div className="flex justify-center items-center p-8">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                )}
 
                 {recommendations && (
                     <div className="p-6 border-2 border-primary/20 rounded-lg bg-primary/5 animate-in fade-in-50 duration-500">

@@ -18,13 +18,29 @@ const MarketAnalysisInputSchema = z.object({
 export type MarketAnalysisInput = z.infer<typeof MarketAnalysisInputSchema>;
 
 const MarketAnalysisOutputSchema = z.object({
-  analysis: z.string().describe('A concise market analysis including current price trends, demand, and selling advice.'),
+  analysis: z.string().describe('A concise market analysis including current MSP, price trends, and demand forecast.'),
   mandiPrices: z.array(z.object({
     mandiName: z.string().describe('The name of the agricultural market (mandi).'),
     price: z.string().describe('The current price of the crop in that mandi, formatted as a string (e.g., "₹5,500 - ₹6,000 per quintal").'),
   })).describe('A list of prices from up to 3 nearby mandis.'),
 });
 export type MarketAnalysisOutput = z.infer<typeof MarketAnalysisOutputSchema>;
+
+const marketAnalysisFlow = ai.defineFlow(
+  {
+    name: 'marketAnalysisFlow',
+    inputSchema: MarketAnalysisInputSchema,
+    outputSchema: MarketAnalysisOutputSchema,
+  },
+  async input => {
+    // In a real app, you might have a service to get real market data.
+    // Here we simulate it with a more detailed AI call.
+    await new Promise(resolve => setTimeout(resolve, 1200)); 
+    const { output } = await prompt(input);
+    return output!;
+  }
+);
+
 
 export async function getMarketAnalysis(input: MarketAnalysisInput): Promise<MarketAnalysisOutput> {
   return marketAnalysisFlow(input);
@@ -43,18 +59,3 @@ const prompt = ai.definePrompt({
   State: {{{state}}}
   `,
 });
-
-const marketAnalysisFlow = ai.defineFlow(
-  {
-    name: 'marketAnalysisFlow',
-    inputSchema: MarketAnalysisInputSchema,
-    outputSchema: MarketAnalysisOutputSchema,
-  },
-  async input => {
-    // In a real app, you might have a service to get real market data.
-    // Here we simulate it with a more detailed AI call.
-    await new Promise(resolve => setTimeout(resolve, 1200)); 
-    const { output } = await prompt(input);
-    return output!;
-  }
-);

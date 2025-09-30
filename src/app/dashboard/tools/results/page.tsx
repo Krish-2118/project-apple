@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronRight, Lightbulb, Loader2, MapPin, TrendingUp, Wind } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Lightbulb, Loader2, MapPin, TrendingUp } from 'lucide-react';
 import type { PredictYieldOutput } from '@/ai/flows/yield-prediction';
 import type { MarketAnalysisOutput } from '@/ai/flows/market-analysis';
 import type { YieldEnhancementOutput } from '@/ai/flows/yield-enhancement';
@@ -37,9 +37,12 @@ function ResultsPageContent() {
         const storedResults = sessionStorage.getItem('analysisResults');
         if (storedResults) {
             setResults(JSON.parse(storedResults));
+        } else {
+             // If there's no data, maybe redirect back to the start
+             router.replace('/dashboard/tools');
         }
         setLoading(false);
-    }, []);
+    }, [router]);
 
     const handleBack = () => {
         router.push('/dashboard/tools');
@@ -61,6 +64,7 @@ function ResultsPageContent() {
     const { yieldResult, marketResult, tipsResult, userInput } = results;
     const placeholderImage = getPlaceHolderImage(userInput.cropType);
     const cropEmoji = cropEmojis[userInput.cropType.toLowerCase() as keyof typeof cropEmojis] || cropEmojis['default'];
+    const totalYield = yieldResult.predictedYieldTonnesPerAcre * userInput.area;
     
     return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -89,13 +93,19 @@ function ResultsPageContent() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
            <div className="lg:col-span-1 space-y-6">
-                 <Card>
+                <Card>
                     <CardHeader>
-                        <CardTitle className="text-xl font-headline">Predicted Yield</CardTitle>
+                        <CardTitle className="text-xl font-headline">Yield Prediction</CardTitle>
                     </CardHeader>
-                    <CardContent className="text-center">
-                         <p className="text-6xl font-bold text-primary">{yieldResult.predictedYieldTonnesPerAcre.toFixed(2)}</p>
-                         <p className="text-muted-foreground font-medium">Tonnes / Acre</p>
+                    <CardContent className="space-y-4">
+                        <div className="text-center border-b pb-4">
+                            <p className="text-5xl font-bold text-primary">{yieldResult.predictedYieldTonnesPerAcre.toFixed(2)}</p>
+                            <p className="text-muted-foreground font-medium">Tonnes / Acre</p>
+                        </div>
+                        <div className="text-center pt-2">
+                             <p className="text-sm text-muted-foreground">Total for {userInput.area} acres:</p>
+                             <p className="text-2xl font-bold">{totalYield.toFixed(2)} Tonnes</p>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -121,7 +131,7 @@ function ResultsPageContent() {
            </div>
            
             <div className="lg:col-span-2">
-                <Card className="bg-background/80">
+                <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-xl font-headline"><Lightbulb className="h-6 w-6 text-primary" /> Yield Enhancement Tips</CardTitle>
                         <CardDescription>Actionable advice to improve your crop outcome.</CardDescription>

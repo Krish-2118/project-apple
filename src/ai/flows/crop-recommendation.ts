@@ -28,6 +28,19 @@ const CropRecommendationOutputSchema = z.object({
 });
 export type CropRecommendationOutput = z.infer<typeof CropRecommendationOutputSchema>;
 
+const cropRecommendationFlow = ai.defineFlow(
+  {
+    name: 'cropRecommendationFlow',
+    inputSchema: CropRecommendationInputSchema,
+    outputSchema: CropRecommendationOutputSchema,
+  },
+  async input => {
+    const { output } = await prompt(input);
+    return output!;
+  }
+);
+
+
 export async function getCropRecommendation(input: CropRecommendationInput): Promise<CropRecommendationOutput> {
   return cropRecommendationFlow(input);
 }
@@ -48,15 +61,3 @@ const prompt = ai.definePrompt({
   Soil pH: {{{ph}}}
   `,
 });
-
-const cropRecommendationFlow = ai.defineFlow(
-  {
-    name: 'cropRecommendationFlow',
-    inputSchema: CropRecommendationInputSchema,
-    outputSchema: CropRecommendationOutputSchema,
-  },
-  async input => {
-    const { output } = await prompt(input);
-    return output!;
-  }
-);

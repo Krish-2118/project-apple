@@ -14,7 +14,6 @@ const PredictYieldInputSchema = z.object({
   cropType: z.string().describe('The type of crop (e.g., rice, wheat).'),
   state: z.string().describe('The state where the crop is being grown.'),
   soilType: z.string().describe('The type of soil in the field.'),
-  area: z.number().describe('The area of the land in acres.'),
   sowingDate: z.string().describe('The sowing date of the crop (YYYY-MM-DD).'),
 });
 export type PredictYieldInput = z.infer<typeof PredictYieldInputSchema>;
@@ -25,6 +24,22 @@ const PredictYieldOutputSchema = z.object({
     .describe('The predicted yield in tonnes per acre.'),
 });
 export type PredictYieldOutput = z.infer<typeof PredictYieldOutputSchema>;
+
+
+const predictYieldFlow = ai.defineFlow(
+  {
+    name: 'predictYieldFlow',
+    inputSchema: PredictYieldInputSchema,
+    outputSchema: PredictYieldOutputSchema,
+  },
+  async input => {
+    // Simulate a short delay to mimic an API call
+    await new Promise(resolve => setTimeout(resolve, 800));
+    const prediction = getRealisticPrediction(input);
+    return prediction;
+  }
+);
+
 
 export async function predictYield(input: PredictYieldInput): Promise<PredictYieldOutput> {
   return predictYieldFlow(input);
@@ -40,7 +55,7 @@ const getRealisticPrediction = (input: PredictYieldInput): PredictYieldOutput =>
   let baseYield = baseYields[input.cropType.toLowerCase()] || baseYields['default'];
 
   // State-wise productivity modifiers (example values, Odisha focused)
-  const stateModifiers: {[key: string]: number} = {
+  const stateModifiers: {[key:string]: number} = {
     'Odisha': 1.0, // Baseline for our focus state
     'Punjab': 1.25, 'Haryana': 1.2, 'Uttar Pradesh': 1.1,
     'Andhra Pradesh': 1.1, 'Tamil Nadu': 1.1, 'West Bengal': 1.05,
@@ -72,29 +87,12 @@ const getRealisticPrediction = (input: PredictYieldInput): PredictYieldOutput =>
      else sowingFactor = 0.9;
   }
 
-  // Area factor (minor non-linear effect) - larger farms may have slightly better efficiency
-  const areaFactor = 1 + (Math.log10(Math.max(1, input.area)) / 25); // small bonus for larger area, capped
-
   // Random environmental/unmodeled factor to represent real-world variability
   const randomFactor = 1 + (Math.random() - 0.5) * 0.15; // +/- 7.5% variance
 
-  const predictedYield = baseYield * stateModifier * soilModifier * sowingFactor * areaFactor * randomFactor;
+  const predictedYield = baseYield * stateModifier * soilModifier * sowingFactor * randomFactor;
   
   return {
     predictedYieldTonnesPerAcre: parseFloat(predictedYield.toFixed(2)),
   };
 };
-
-const predictYieldFlow = ai.defineFlow(
-  {
-    name: 'predictYieldFlow',
-    inputSchema: PredictYieldInputSchema,
-    outputSchema: PredictYieldOutputSchema,
-  },
-  async input => {
-    // Simulate a short delay to mimic an API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const prediction = getRealisticPrediction(input);
-    return prediction;
-  }
-);
