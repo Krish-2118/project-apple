@@ -4,6 +4,8 @@ import { YieldPredictionCard } from "@/components/dashboard/yield-prediction-car
 import { AlertsCard } from "@/components/dashboard/alerts-card";
 import { CropCalendarCard } from "@/components/dashboard/crop-calendar-card";
 import { InventoryCard } from "@/components/dashboard/inventory-card";
+import { CropRecommendationCard } from "@/components/dashboard/crop-recommendation-card";
+import { MarketAnalysisCard } from "@/components/dashboard/market-analysis-card";
 
 export default function DashboardPage() {
   return (
@@ -25,6 +27,12 @@ export default function DashboardPage() {
         </div>
         <div className="lg:col-span-2">
             <InventoryCard />
+        </div>
+        <div className="lg:col-span-2">
+            <CropRecommendationCard />
+        </div>
+        <div className="lg:col-span-2">
+            <MarketAnalysisCard />
         </div>
     </div>
   );

@@ -30,6 +30,41 @@ export async function predictYield(input: PredictYieldInput): Promise<PredictYie
   return predictYieldFlow(input);
 }
 
+// Dummy data generation function
+const getDummyPrediction = (input: PredictYieldInput): PredictYieldOutput => {
+  // Simple logic to generate a somewhat realistic but random yield
+  let baseYield = 0;
+  switch (input.cropType.toLowerCase()) {
+    case 'rice':
+      baseYield = 2.5;
+      break;
+    case 'wheat':
+      baseYield = 2.0;
+      break;
+    case 'maize':
+      baseYield = 3.0;
+      break;
+    case 'sugarcane':
+      baseYield = 30;
+      break;
+    case 'cotton':
+      baseYield = 0.5;
+      break;
+    default:
+      baseYield = 1.5;
+  }
+  // Add some variability based on other inputs
+  const stateFactor = (input.state.length % 5) * 0.1; // 0 to 0.4
+  const areaFactor = Math.min(input.area / 10, 1) * 0.2; // 0 to 0.2
+  const randomFactor = Math.random() * 0.5 - 0.25; // -0.25 to 0.25
+
+  const predictedYield = baseYield + stateFactor + areaFactor + randomFactor;
+
+  return {
+    predictedYieldTonnesPerAcre: parseFloat(predictedYield.toFixed(2)),
+  };
+};
+
 const predictYieldFlow = ai.defineFlow(
   {
     name: 'predictYieldFlow',
@@ -37,33 +72,10 @@ const predictYieldFlow = ai.defineFlow(
     outputSchema: PredictYieldOutputSchema,
   },
   async input => {
-    // Call the external prediction API using a tool.
-    const prediction = await getYieldPrediction(input);
+    // Simulate a short delay to mimic an API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    // Return dummy data instead of calling an external tool
+    const prediction = getDummyPrediction(input);
     return prediction;
-  }
-);
-
-const getYieldPrediction = ai.defineTool(
-  {
-    name: 'getYieldPrediction',
-    description: 'Calls an external API to predict crop yield based on crop type, location, area, and sowing date.',
-    inputSchema: PredictYieldInputSchema,
-    outputSchema: PredictYieldOutputSchema,
-  },
-  async input => {
-    const response = await fetch('http://127.0.0.1:5000/predict', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(input),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data as PredictYieldOutput;
   }
 );
