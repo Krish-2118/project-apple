@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -47,6 +48,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getPlaceHolderImage } from "@/lib/placeholder-images";
 
 import { getCropRecommendation, CropRecommendationOutput } from "@/ai/flows/crop-recommendation";
 import { predictYield, PredictYieldOutput } from "@/ai/flows/yield-prediction";
@@ -61,6 +63,9 @@ const cropTypes = ["Rice", "Maize", "Jute", "Groundnut", "Pulses", "Sugarcane"];
 const recommendationSchema = z.object({
   state: z.string().min(1, "Please select a state."),
   soilType: z.string().min(1, "Please select a soil type."),
+  rainfall: z.coerce.number().min(0, "Rainfall must be a positive number."),
+  temperature: z.coerce.number(),
+  ph: z.coerce.number().min(0, "pH must be positive").max(14, "pH must be less than 14."),
 });
 
 const predictionSchema = z.object({
@@ -85,13 +90,16 @@ export function AiAssistant() {
     state: 'Odisha',
     soilType: '',
     cropType: '',
+    rainfall: 1500,
+    temperature: 28,
+    ph: 6.5,
   });
 
   const { toast } = useToast();
 
   const recommendationForm = useForm<RecommendationFormValues>({
     resolver: zodResolver(recommendationSchema),
-    defaultValues: { state: 'Odisha' },
+    defaultValues: { state: 'Odisha', rainfall: 1500, temperature: 28, ph: 6.5 },
   });
 
   const predictionForm = useForm<PredictionFormValues>({
@@ -108,6 +116,7 @@ export function AiAssistant() {
       setCurrentStep("predict");
     } catch (error) {
       toast({ variant: "destructive", title: "Error", description: "Could not fetch crop recommendations." });
+      console.error(error);
     }
     setIsLoading(false);
   };
@@ -119,36 +128,40 @@ export function AiAssistant() {
 
   const handleGetPrediction = async (values: PredictionFormValues) => {
     setIsLoading(true);
-    setFormInputs(prev => ({...prev, cropType: values.cropType}));
+    const fullInputs = { ...formInputs, ...values };
+    setFormInputs(fullInputs);
+    
     setPrediction(null);
     setAnalysis(null);
     setEnhancementTips(null);
 
     const yieldInput = {
       ...values,
-      state: formInputs.state,
-      soilType: formInputs.soilType,
+      state: fullInputs.state,
+      soilType: fullInputs.soilType,
       sowingDate: format(values.sowingDate, "yyyy-MM-dd"),
     };
 
     try {
-      const [yieldResult, marketResult, tipsResult] = await Promise.all([
-        predictYield(yieldInput),
+      // We need to predict yield first to pass it to the enhancement tips
+      const yieldResult = await predictYield(yieldInput);
+      setPrediction(yieldResult);
+
+      const [marketResult, tipsResult] = await Promise.all([
         getMarketAnalysis({ cropName: values.cropType }),
         getYieldEnhancementTips({ 
             ...yieldInput, 
-            predictedYield: 0 // Placeholder, will be updated post-prediction
+            predictedYield: yieldResult.predictedYieldTonnesPerAcre
         }) 
       ]);
 
-      // A more realistic flow would re-trigger tips generation with the actual yield, but we'll batch for speed
-      setPrediction(yieldResult);
       setAnalysis(marketResult);
       setEnhancementTips(tipsResult.tips);
       
       setCurrentStep("results");
     } catch (error) {
        toast({ variant: "destructive", title: "Error", description: "Could not fetch all insights. Please try again." });
+       console.error(error);
     }
     setIsLoading(false);
   };
@@ -159,7 +172,7 @@ export function AiAssistant() {
     setPrediction(null);
     setAnalysis(null);
     setEnhancementTips(null);
-    recommendationForm.reset({ state: 'Odisha' });
+    recommendationForm.reset({ state: 'Odisha', rainfall: 1500, temperature: 28, ph: 6.5 });
     predictionForm.reset({ area: 1, sowingDate: new Date() });
   };
 
@@ -179,10 +192,13 @@ export function AiAssistant() {
         <div className={cn("p-6 border rounded-lg", currentStep !== "recommend" && "bg-muted/30 border-dashed")}>
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Step 1: Find the Best Crop</h3>
             <Form {...recommendationForm}>
-                <form onSubmit={recommendationForm.handleSubmit(handleGetRecommendations)} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <form onSubmit={recommendationForm.handleSubmit(handleGetRecommendations)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                     <FormField control={recommendationForm.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled><FormControl><SelectTrigger><SelectValue placeholder="Select your state" /></SelectTrigger></FormControl><SelectContent>{indianStates.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                     <FormField control={recommendationForm.control} name="soilType" render={({ field }) => (<FormItem><FormLabel>Soil Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={currentStep !== 'recommend'}><FormControl><SelectTrigger><SelectValue placeholder="Select soil type" /></SelectTrigger></FormControl><SelectContent>{odishaSoilTypes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                    <div className="flex justify-end">
+                    <FormField control={recommendationForm.control} name="rainfall" render={({ field }) => ( <FormItem><FormLabel>Annual Rainfall (mm)</FormLabel><FormControl><Input type="number" {...field} disabled={currentStep !== 'recommend'} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={recommendationForm.control} name="temperature" render={({ field }) => ( <FormItem><FormLabel>Avg. Temp (°C)</FormLabel><FormControl><Input type="number" {...field} disabled={currentStep !== 'recommend'} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={recommendationForm.control} name="ph" render={({ field }) => ( <FormItem><FormLabel>Soil pH</FormLabel><FormControl><Input type="number" step="0.1" {...field} disabled={currentStep !== 'recommend'} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="flex justify-end md:col-span-2 lg:col-span-5">
                         <Button type="submit" disabled={isLoading || currentStep !== 'recommend'}>{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Get Recommendations</Button>
                     </div>
                 </form>
@@ -196,14 +212,22 @@ export function AiAssistant() {
                 
                 {recommendations && (
                     <div className="mb-6">
-                        <h4 className="font-semibold text-md mb-2">Recommended Crops:</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {recommendations.map(rec => (
-                                <button key={rec.cropName} onClick={() => handleSelectRecommendedCrop(rec.cropName)} className={cn("p-3 border rounded-md text-left transition-all hover:border-primary hover:bg-primary/5", formInputs.cropType === rec.cropName && "bg-primary/10 border-primary")}>
-                                    <p className="font-semibold">{rec.cropName}</p>
-                                    <p className="text-xs text-muted-foreground">{rec.reason}</p>
-                                </button>
-                            ))}
+                        <h4 className="font-semibold text-md mb-2">Recommended Crops for your parameters:</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {recommendations.map(rec => {
+                                const placeholder = getPlaceHolderImage(rec.cropName);
+                                return (
+                                  <button key={rec.cropName} onClick={() => handleSelectRecommendedCrop(rec.cropName)} className={cn("border rounded-lg text-left transition-all hover:border-primary hover:bg-primary/5 overflow-hidden", formInputs.cropType === rec.cropName && "bg-primary/10 border-primary ring-2 ring-primary")}>
+                                      <div className="relative w-full h-32">
+                                          <Image src={placeholder.imageUrl} alt={rec.cropName} fill style={{ objectFit: 'cover' }} data-ai-hint={placeholder.imageHint} />
+                                      </div>
+                                      <div className="p-3">
+                                        <p className="font-semibold">{rec.cropName}</p>
+                                        <p className="text-xs text-muted-foreground">{rec.reason}</p>
+                                      </div>
+                                  </button>
+                                )
+                            })}
                         </div>
                     </div>
                 )}
@@ -212,10 +236,10 @@ export function AiAssistant() {
                     <form onSubmit={predictionForm.handleSubmit(handleGetPrediction)} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                         <FormField control={predictionForm.control} name="cropType" render={({ field }) => (<FormItem><FormLabel>Selected Crop</FormLabel><Select onValueChange={(value) => { field.onChange(value); setFormInputs(prev => ({...prev, cropType: value})); }} value={field.value} disabled={currentStep !== 'predict'}><FormControl><SelectTrigger><SelectValue placeholder="Select a crop" /></SelectTrigger></FormControl><SelectContent>{[...new Set([...cropTypes, ...recommendations?.map(r => r.cropName) ?? []])].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                         <FormField control={predictionForm.control} name="area" render={({ field }) => ( <FormItem><FormLabel>Area (in acres)</FormLabel><FormControl><Input type="number" step="0.1" {...field} disabled={currentStep !== 'predict'} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={predictionForm.control} name="sowingDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Sowing Date</FormLabel><Popover><PopoverTrigger asChild><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground" )} disabled={currentStep !== 'predict'}>{field.value ? (format(field.value, "PPP")) : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("2020-01-01")} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                        <FormField control={predictionForm.control} name="sowingDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Sowing Date</FormLabel><Popover><PopoverTrigger asChild><Button variant={"outline"} className={cn("w-full justify-start pl-3 text-left font-normal", !field.value && "text-muted-foreground" )} disabled={currentStep !== 'predict'}>{field.value ? (format(field.value, "PPP")) : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("2020-01-01")} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                         <div className="md:col-span-3 flex justify-end gap-2">
                            <Button type="button" variant="ghost" onClick={handleReset} disabled={isLoading}>Start Over</Button>
-                           <Button type="submit" disabled={isLoading || currentStep !== 'predict'}>{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Predict & Analyze</Button>
+                           <Button type="submit" disabled={isLoading || currentStep !== 'predict' || !predictionForm.getValues().cropType}>{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Predict & Analyze</Button>
                         </div>
                     </form>
                 </Form>

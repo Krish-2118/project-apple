@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview An AI agent that provides crop recommendations based on soil type and state.
+ * @fileOverview An AI agent that provides crop recommendations based on soil type, state, and other environmental factors.
  *
  * - getCropRecommendation - A function that returns crop recommendations.
  * - CropRecommendationInput - The input type for the getCropRecommendation function.
@@ -14,6 +14,9 @@ import { z } from 'zod';
 const CropRecommendationInputSchema = z.object({
   soilType: z.string().describe('The type of soil in the field (e.g., Alluvial, Black, Red, Sandy).'),
   state: z.string().describe('The Indian state where the field is located.'),
+  rainfall: z.number().describe('The average annual rainfall in millimeters.'),
+  temperature: z.number().describe('The average annual temperature in Celsius.'),
+  ph: z.number().min(0).max(14).describe('The pH level of the soil.'),
 });
 export type CropRecommendationInput = z.infer<typeof CropRecommendationInputSchema>;
 
@@ -34,11 +37,15 @@ const prompt = ai.definePrompt({
   input: { schema: CropRecommendationInputSchema },
   output: { schema: CropRecommendationOutputSchema },
   prompt: `You are an expert agricultural advisor in India.
-  Based on the given soil type and state, provide a list of up to 3 suitable crop recommendations.
+  Based on the given soil type, state, rainfall, temperature, and soil pH, provide a list of up to 3 suitable crop recommendations.
+  Focus on crops that are viable and profitable in the state of {{{state}}}.
   For each crop, provide a short, compelling reason why it's a good choice for the specified conditions.
 
   Soil Type: {{{soilType}}}
   State: {{{state}}}
+  Annual Rainfall: {{{rainfall}}} mm
+  Average Temperature: {{{temperature}}} C
+  Soil pH: {{{ph}}}
   `,
 });
 
