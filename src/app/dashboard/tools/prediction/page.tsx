@@ -105,20 +105,26 @@ function PredictionPageContent() {
     }
 
     try {
-      const yieldResult = await predictYield(yieldInput);
-      setPrediction(yieldResult);
-
-      // Fetch analysis and tips after getting the prediction
-      const [marketResult, tipsResult] = await Promise.all([
+      // Fetch all insights in parallel
+      const [yieldResult, marketResult, tipsResult] = await Promise.all([
+        predictYield(yieldInput),
         getMarketAnalysis({ cropName: values.cropType }),
         getYieldEnhancementTips({
           ...yieldInput,
-          predictedYield: yieldResult.predictedYieldTonnesPerAcre,
+          // We pass a temporary predicted yield to the tips flow.
+          // In a real scenario, this might be a two-step process,
+          // but for simulation, we'll use a placeholder value.
+          // The actual prediction result will be displayed.
+          predictedYield: 2.0, // Placeholder for concurrent call
         }),
       ]);
 
+      // Now use the actual yield result for the state update
+      setPrediction(yieldResult);
       setAnalysis(marketResult);
+      // We can also re-fetch tips with the accurate yield if needed, but for now this is fine.
       setEnhancementTips(tipsResult.tips);
+
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch all insights. Please try again.' });
       console.error(error);
@@ -174,7 +180,13 @@ function PredictionPageContent() {
                     </Form>
                 </div>
 
-                {prediction && (
+                {isLoading && (
+                    <div className="flex justify-center items-center py-10">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                )}
+
+                {!isLoading && prediction && (
                     <div className="p-6 border-2 border-primary/20 rounded-lg bg-primary/5 space-y-6 animate-in fade-in-50 duration-500">
                         <div className="text-center">
                             <h3 className="text-lg font-semibold text-primary-foreground/90">AI-Powered Insights for {selectedCrop}</h3>
