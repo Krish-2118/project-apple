@@ -33,9 +33,13 @@ const predictYieldFlow = ai.defineFlow(
     outputSchema: PredictYieldOutputSchema,
   },
   async input => {
-    // Simulate a short delay to mimic an API call
-    await new Promise(resolve => setTimeout(resolve, 800));
+    // Simulate a short delay to mimic a complex model running
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // This function simulates a more complex prediction model.
+    // In a real-world scenario, this would be a call to a trained ML model.
     const prediction = getRealisticPrediction(input);
+    
     return prediction;
   }
 );
@@ -46,6 +50,10 @@ export async function predictYield(input: PredictYieldInput): Promise<PredictYie
 }
 
 
+/**
+ * Simulates a realistic yield prediction based on various factors for Odisha.
+ * This is a placeholder for a real machine learning model.
+ */
 const getRealisticPrediction = (input: PredictYieldInput): PredictYieldOutput => {
   // Base yields (tonnes/acre) for different crops - somewhat aligned with Indian averages
   const baseYields: {[key: string]: number} = {
@@ -55,40 +63,47 @@ const getRealisticPrediction = (input: PredictYieldInput): PredictYieldOutput =>
   let baseYield = baseYields[input.cropType.toLowerCase()] || baseYields['default'];
 
   // State-wise productivity modifiers (example values, Odisha focused)
+  // A real model would have more granular data.
   const stateModifiers: {[key:string]: number} = {
     'Odisha': 1.0, // Baseline for our focus state
-    'Punjab': 1.25, 'Haryana': 1.2, 'Uttar Pradesh': 1.1,
-    'Andhra Pradesh': 1.1, 'Tamil Nadu': 1.1, 'West Bengal': 1.05,
-    'Madhya Pradesh': 0.9, 'Rajasthan': 0.8, 'Maharashtra': 0.85,
+    'Punjab': 1.25, 
+    'Haryana': 1.2, 
+    'Uttar Pradesh': 1.1,
     'default': 1.0
   };
   const stateModifier = stateModifiers[input.state] || stateModifiers['default'];
   
-  // Soil type modifiers (example values)
+  // Soil type modifiers specific to Odisha (example values)
   const soilModifiers: {[key: string]: number} = {
-      'alluvial': 1.1, 'red': 1.0, 'laterite': 0.9, 'black': 1.05, 'coastal saline': 0.85,
+      'alluvial': 1.1, 
+      'red': 1.0, 
+      'laterite': 0.9, 
+      'black': 1.05, 
+      'coastal saline': 0.85,
       'default': 1.0
   }
   const soilModifier = soilModifiers[input.soilType.toLowerCase()] || soilModifiers['default'];
 
 
-  // Sowing date impact (simplified model based on month)
+  // Sowing date impact (simplified model based on month for Odisha's climate)
   const sowingMonth = new Date(input.sowingDate).getMonth() + 1; // 1-12
   let sowingFactor = 1.0;
   
-  // Kharif crops (like Rice) are sown June-July in Odisha
-  if (input.cropType.toLowerCase() === 'rice') {
-    if (sowingMonth >= 6 && sowingMonth <= 8) sowingFactor = 1.1; // Optimal sowing for Kharif rice
-    else sowingFactor = 0.85; // Penalty for off-season sowing
+  // Kharif crops (like Rice, Jute, Maize) are typically sown June-July in Odisha
+  if (['rice', 'jute', 'maize', 'groundnut'].includes(input.cropType.toLowerCase())) {
+    if (sowingMonth >= 6 && sowingMonth <= 8) sowingFactor = 1.1; // Optimal sowing for Kharif
+    else if (sowingMonth >= 9 && sowingMonth <=10) sowingFactor = 0.9; // Late sowing
+    else sowingFactor = 0.75; // Off-season sowing penalty
   } 
   // Rabi crops (like Wheat, Pulses) are sown Oct-Dec
   else if (['wheat', 'pulses'].includes(input.cropType.toLowerCase())) {
-     if (sowingMonth >= 10 && sowingMonth <= 12) sowingFactor = 1.05;
-     else sowingFactor = 0.9;
+     if (sowingMonth >= 10 && sowingMonth <= 12) sowingFactor = 1.05; // Optimal Rabi sowing
+     else sowingFactor = 0.8; // Off-season
   }
 
   // Random environmental/unmodeled factor to represent real-world variability
-  const randomFactor = 1 + (Math.random() - 0.5) * 0.15; // +/- 7.5% variance
+  // e.g., unexpected pest attacks, minor weather deviations
+  const randomFactor = 1 + (Math.random() - 0.5) * 0.15; // Adds a +/- 7.5% variance
 
   const predictedYield = baseYield * stateModifier * soilModifier * sowingFactor * randomFactor;
   

@@ -31,7 +31,6 @@ const cropEmojis: { [key: string]: string } = {
 const predictionSchema = z.object({
   cropType: z.string().min(1, 'Please select a crop type.'),
   sowingDate: z.string().min(1, 'Please select a sowing month.'),
-  area: z.coerce.number().min(0.1, "Area must be positive"),
 });
 
 type PredictionFormValues = z.infer<typeof predictionSchema>;
@@ -54,7 +53,6 @@ function PredictionPageContent() {
     defaultValues: {
       cropType: formInputs.crop === 'custom' ? '' : formInputs.crop,
       sowingDate: '',
-      area: 1,
     },
   });
 
@@ -69,9 +67,8 @@ function PredictionPageContent() {
     setIsLoading(true);
 
     const monthIndex = sowingMonths.indexOf(values.sowingDate);
-    const fullDate = new Date(new Date().getFullYear(), monthIndex, 1);
+    const fullDate = new Date(new Date().getFullYear(), monthIndex, 15); // Use 15th to be safe
     
-    // Create a lean version of the input without the area for prediction
     const predictionBaseInput = {
         cropType: values.cropType,
         state: formInputs.state,
@@ -90,18 +87,14 @@ function PredictionPageContent() {
       const [yieldResult, marketResult, tipsResult] = await Promise.all([
         predictYield(predictionBaseInput),
         getMarketAnalysis({ cropName: values.cropType, state: formInputs.state }),
-        // We can pass a dummy predictedYield here as the enhancement tips can be generated independently
-        getYieldEnhancementTips({ ...predictionBaseInput, predictedYield: 2.0 }),
+        getYieldEnhancementTips({ ...predictionBaseInput, predictedYield: 0 }), // predictedYield is not needed for tips
       ]);
 
       const results = {
         yieldResult,
         marketResult,
         tipsResult,
-        userInput: {
-            ...predictionBaseInput,
-            area: values.area // Pass the area to the results page for display
-        }
+        userInput: predictionBaseInput,
       };
       
       sessionStorage.setItem('analysisResults', JSON.stringify(results));
@@ -141,7 +134,7 @@ function PredictionPageContent() {
                     <CardTitle className="font-headline text-3xl">
                         AI Analysis for {selectedCrop || 'Your Crop'}
                     </CardTitle>
-                    <CardDescription>Step 2: Provide Details for Prediction & Analysis</CardDescription>
+                    <CardDescription>Step 2: Provide Sowing Details for Prediction & Analysis</CardDescription>
                     <div className="text-xs text-muted-foreground mt-2 space-x-4">
                         <span>State: <strong>{formInputs.state}</strong></span>
                         {formInputs.soilType && <span>Soil: <strong>{formInputs.soilType}</strong></span>}
@@ -150,13 +143,12 @@ function PredictionPageContent() {
             </div>
             <CardContent className="p-6">
                 <div className="p-6 border rounded-lg">
-                     <h3 className="text-lg font-semibold mb-4">Provide Sowing & Land Details</h3>
+                     <h3 className="text-lg font-semibold mb-4">Provide Sowing Details</h3>
                      <Form {...predictionForm}>
                         <form onSubmit={predictionForm.handleSubmit(handleGetPrediction)} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                             <FormField control={predictionForm.control} name="cropType" render={({ field }) => (<FormItem className="md:col-span-1"><FormLabel>Selected Crop</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a crop" /></SelectTrigger></FormControl><SelectContent>{[...new Set(cropTypes)].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                             <FormField control={predictionForm.control} name="sowingDate" render={({ field }) => ( <FormItem className="md:col-span-1"><FormLabel>Sowing Month</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a month" /></SelectTrigger></FormControl><SelectContent>{sowingMonths.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                            <FormField control={predictionForm.control} name="area" render={({ field }) => ( <FormItem className="md:col-span-1"><FormLabel>Area (Acres)</FormLabel><FormControl><Input type="number" step="0.1" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <div className="flex justify-end md:col-span-3">
+                            <div className="flex justify-end md:col-start-3">
                                <Button type="submit" disabled={isLoading || !predictionForm.formState.isValid} className="w-full md:w-auto">{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Predict & Analyze</Button>
                             </div>
                         </form>

@@ -19,7 +19,6 @@ type ResultsData = {
         cropType: string;
         state: string;
         soilType: string;
-        area: number;
     }
 }
 
@@ -36,9 +35,14 @@ function ResultsPageContent() {
     useEffect(() => {
         const storedResults = sessionStorage.getItem('analysisResults');
         if (storedResults) {
-            setResults(JSON.parse(storedResults));
+            try {
+                setResults(JSON.parse(storedResults));
+            } catch (e) {
+                console.error("Failed to parse analysis results from sessionStorage", e);
+                router.replace('/dashboard/tools');
+            }
         } else {
-             // If there's no data, maybe redirect back to the start
+             // If there's no data, redirect back to the start
              router.replace('/dashboard/tools');
         }
         setLoading(false);
@@ -53,10 +57,12 @@ function ResultsPageContent() {
     }
 
     if (!results) {
+        // This state is hit if sessionStorage is empty or parsing fails.
+        // A redirect is already initiated, but this is a fallback UI.
         return (
             <div className="text-center">
-                <p>No results found. Please start a new analysis.</p>
-                <Button onClick={handleBack} className="mt-4">Go Back</Button>
+                <p>No results found or your session has expired.</p>
+                <Button onClick={handleBack} className="mt-4">Start New Analysis</Button>
             </div>
         )
     }
@@ -64,7 +70,6 @@ function ResultsPageContent() {
     const { yieldResult, marketResult, tipsResult, userInput } = results;
     const placeholderImage = getPlaceHolderImage(userInput.cropType);
     const cropEmoji = cropEmojis[userInput.cropType.toLowerCase() as keyof typeof cropEmojis] || cropEmojis['default'];
-    const totalYield = yieldResult.predictedYieldTonnesPerAcre * userInput.area;
     
     return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -86,7 +91,7 @@ function ResultsPageContent() {
                     <CardTitle className="font-headline text-3xl">
                         AI Analysis Report for {userInput.cropType}
                     </CardTitle>
-                    <CardDescription>Generated based on your farm conditions in {userInput.state}</CardDescription>
+                    <CardDescription>Generated for your farm in {userInput.state} with {userInput.soilType.toLowerCase()} soil.</CardDescription>
                  </div>
             </div>
         </Card>
@@ -97,15 +102,9 @@ function ResultsPageContent() {
                     <CardHeader>
                         <CardTitle className="text-xl font-headline">Yield Prediction</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="text-center border-b pb-4">
-                            <p className="text-5xl font-bold text-primary">{yieldResult.predictedYieldTonnesPerAcre.toFixed(2)}</p>
-                            <p className="text-muted-foreground font-medium">Tonnes / Acre</p>
-                        </div>
-                        <div className="text-center pt-2">
-                             <p className="text-sm text-muted-foreground">Total for {userInput.area} acres:</p>
-                             <p className="text-2xl font-bold">{totalYield.toFixed(2)} Tonnes</p>
-                        </div>
+                    <CardContent className="text-center">
+                        <p className="text-5xl font-bold text-primary">{yieldResult.predictedYieldTonnesPerAcre.toFixed(2)}</p>
+                        <p className="text-muted-foreground font-medium">Tonnes / Acre</p>
                     </CardContent>
                 </Card>
 
