@@ -52,8 +52,9 @@ const prompt = ai.definePrompt({
   output: { schema: MarketAnalysisOutputSchema },
   prompt: `You are an expert agricultural market analyst for India.
   For the crop {{{cropName}}} in the state of {{{state}}}, provide a brief, actionable market analysis.
-  Include current MSP (if any), general price trends, and demand forecast.
+  Include current MSP (if any), general price trends (last 3-6 months), and demand forecast for the next season.
   Also, provide a list of current prices from up to 3 major or nearby mandis (agricultural markets) within or near {{{state}}}.
+  Provide realistic but varied price ranges for each mandi.
 
   Crop: {{{cropName}}}
   State: {{{state}}}
