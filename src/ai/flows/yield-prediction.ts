@@ -1,4 +1,3 @@
-// src/ai/flows/yield-prediction.ts
 'use server';
 /**
  * @fileOverview A flow for predicting crop yield based on various factors.
@@ -58,18 +57,18 @@ const getRealisticPrediction = (input: PredictYieldInput): PredictYieldOutput =>
   const soilModifier = soilModifiers[input.soilType.toLowerCase()] || soilModifiers['default'];
 
 
-  // Sowing date impact (very simplified model)
+  // Sowing date impact (simplified model based on month)
   const sowingMonth = new Date(input.sowingDate).getMonth() + 1; // 1-12
   let sowingFactor = 1.0;
   
   // Kharif crops (like Rice) are sown June-July in Odisha
   if (input.cropType.toLowerCase() === 'rice') {
-    if (sowingMonth >= 6 && sowingMonth <= 7) sowingFactor = 1.1; // Optimal
+    if (sowingMonth >= 6 && sowingMonth <= 8) sowingFactor = 1.1; // Optimal sowing for Kharif rice
     else sowingFactor = 0.85; // Penalty for off-season sowing
   } 
-  // Rabi crops (like Wheat, Pulses) are sown Oct-Nov
+  // Rabi crops (like Wheat, Pulses) are sown Oct-Dec
   else if (['wheat', 'pulses'].includes(input.cropType.toLowerCase())) {
-     if (sowingMonth >= 10 && sowingMonth <= 11) sowingFactor = 1.05;
+     if (sowingMonth >= 10 && sowingMonth <= 12) sowingFactor = 1.05;
      else sowingFactor = 0.9;
   }
 

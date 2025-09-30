@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   Users,
+  Leaf,
 } from "lucide-react";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -26,6 +27,7 @@ import { IndiFarmIcon } from "@/components/icons";
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
+  { href: "/dashboard/tools", icon: Leaf, label: "AI Tools" },
   { href: "/dashboard/community", icon: Users, label: "Community" },
 ];
 
@@ -37,7 +39,7 @@ function MainNav() {
         <SidebarMenuItem key={item.href}>
           <Link href={item.href}>
             <SidebarMenuButton
-              isActive={pathname === item.href}
+              isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
               tooltip={{ children: item.label, side: "right" }}
             >
               <item.icon />

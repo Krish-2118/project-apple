@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
@@ -12,17 +12,19 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, BrainCircuit, Calendar as CalendarIcon, ChevronRight, Lightbulb, Loader2, Sparkles, TrendingUp } from 'lucide-react';
+import { ArrowLeft, BrainCircuit, ChevronRight, Lightbulb, Loader2, Sparkles, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 import { predictYield, PredictYieldOutput } from '@/ai/flows/yield-prediction';
 import { getMarketAnalysis, MarketAnalysisOutput } from '@/ai/flows/market-analysis';
 import { getYieldEnhancementTips, YieldEnhancementOutput } from '@/ai/flows/yield-enhancement';
+import { getPlaceHolderImage } from "@/lib/placeholder-images";
+import Image from "next/image";
+
 
 const cropTypes = ["Rice", "Maize", "Jute", "Groundnut", "Pulses", "Sugarcane", "Wheat", "Cotton"];
+const sowingMonths = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
 const cropEmojis: { [key: string]: string } = {
   "rice": "🌾",
@@ -39,8 +41,7 @@ const cropEmojis: { [key: string]: string } = {
 
 const predictionSchema = z.object({
   cropType: z.string().min(1, 'Please select a crop type.'),
-  area: z.coerce.number().min(0.1, 'Area must be greater than 0.'),
-  sowingDate: z.date({ required_error: 'A sowing date is required.' }),
+  sowingDate: z.string().min(1, 'Please select a sowing month.'),
 });
 
 type PredictionFormValues = z.infer<typeof predictionSchema>;
@@ -60,16 +61,24 @@ function PredictionPageContent() {
       crop: searchParams.get('crop') || 'custom',
       state: searchParams.get('state') || 'Odisha',
       soilType: searchParams.get('soilType') || '',
+      area: 1, // We'll always calculate per acre
   }), [searchParams]);
 
   const predictionForm = useForm<PredictionFormValues>({
     resolver: zodResolver(predictionSchema),
     defaultValues: {
       cropType: formInputs.crop === 'custom' ? '' : formInputs.crop,
-      area: 1, // Default area to 1 acre, since we removed the input
-      sowingDate: new Date(),
+      sowingDate: '',
     },
   });
+
+  // Effect to sync URL param with form state
+  useEffect(() => {
+    const cropFromUrl = searchParams.get('crop');
+    if (cropFromUrl && cropFromUrl !== 'custom') {
+      predictionForm.setValue('cropType', cropFromUrl);
+    }
+  }, [searchParams, predictionForm]);
 
   const handleGetPrediction = async (values: PredictionFormValues) => {
     setIsLoading(true);
@@ -77,11 +86,16 @@ function PredictionPageContent() {
     setAnalysis(null);
     setEnhancementTips(null);
 
+    // Construct a date from the selected month for the flow
+    const monthIndex = sowingMonths.indexOf(values.sowingDate);
+    const fullDate = new Date(new Date().getFullYear(), monthIndex, 1);
+
     const yieldInput = {
       ...values,
       state: formInputs.state,
       soilType: formInputs.soilType,
-      sowingDate: format(values.sowingDate, 'yyyy-MM-dd'),
+      area: formInputs.area,
+      sowingDate: format(fullDate, 'yyyy-MM-dd'),
     };
     
     if (!yieldInput.soilType) {
@@ -118,70 +132,73 @@ function PredictionPageContent() {
 
   const selectedCrop = predictionForm.watch('cropType');
   const cropEmoji = cropEmojis[selectedCrop.toLowerCase() as keyof typeof cropEmojis] || cropEmojis['default'];
+  const placeholderImage = getPlaceHolderImage(selectedCrop);
 
   return (
     <div className="max-w-4xl mx-auto">
         <Button variant="ghost" onClick={handleReset} className="mb-4"><ArrowLeft className="mr-2 h-4 w-4"/> Back to Recommendations</Button>
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline text-2xl flex items-center gap-2">
-                    <BrainCircuit className="h-7 w-7 text-primary"/>
-                    <span>AI Farming Assistant</span>
-                </CardTitle>
-                <CardDescription>Step 2: Predict Yield & Get Actionable Insights</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-8">
-                <div className="p-6 border rounded-lg">
-                    <div className="flex flex-col sm:flex-row gap-6 mb-6">
-                        <div className="text-6xl">{cropEmoji}</div>
-                        <div>
-                             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                <Sparkles className="h-5 w-5 text-primary" />
-                                Prediction for {formInputs.crop === 'custom' ? 'Your Crop' : formInputs.crop}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">Fill in the details below to predict the yield and get market analysis for your selected crop.</p>
-                             <div className="text-xs text-muted-foreground mt-2 space-x-4">
-                                <span>State: <strong>{formInputs.state}</strong></span>
-                                {formInputs.soilType && <span>Soil: <strong>{formInputs.soilType}</strong></span>}
-                            </div>
-                        </div>
+        <Card className="overflow-hidden">
+            <div className="relative h-48 w-full">
+                 <Image 
+                    src={placeholderImage.imageUrl}
+                    alt={placeholderImage.description}
+                    data-ai-hint={placeholderImage.imageHint}
+                    fill
+                    style={{objectFit: 'cover'}}
+                    className="opacity-20"
+                 />
+                 <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+                 <div className="absolute bottom-0 left-0 p-6">
+                    <div className="text-7xl mb-2">{cropEmoji}</div>
+                    <CardTitle className="font-headline text-3xl">
+                        AI Analysis for {selectedCrop || 'Your Crop'}
+                    </CardTitle>
+                    <CardDescription>Step 2: Predict Yield & Get Actionable Insights</CardDescription>
+                    <div className="text-xs text-muted-foreground mt-2 space-x-4">
+                        <span>State: <strong>{formInputs.state}</strong></span>
+                        {formInputs.soilType && <span>Soil: <strong>{formInputs.soilType}</strong></span>}
                     </div>
+                 </div>
+            </div>
+            <CardContent className="p-6 space-y-8">
+                <div className="p-6 border rounded-lg">
+                     <h3 className="text-lg font-semibold mb-4">Provide Sowing Details</h3>
                      <Form {...predictionForm}>
-                        <form onSubmit={predictionForm.handleSubmit(handleGetPrediction)} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                        <form onSubmit={predictionForm.handleSubmit(handleGetPrediction)} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                             <FormField control={predictionForm.control} name="cropType" render={({ field }) => (<FormItem><FormLabel>Selected Crop</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a crop" /></SelectTrigger></FormControl><SelectContent>{[...new Set(cropTypes)].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                            <FormField control={predictionForm.control} name="sowingDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Sowing Date</FormLabel><Popover><PopoverTrigger asChild><Button variant={"outline"} className={cn("w-full justify-start pl-3 text-left font-normal", !field.value && "text-muted-foreground" )}>{field.value ? (format(field.value, "PPP")) : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("2020-01-01")} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-                            <div className="md:col-span-2 flex justify-end gap-2">
-                               <Button type="submit" disabled={isLoading || !predictionForm.formState.isValid}>{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Predict & Analyze</Button>
+                            <FormField control={predictionForm.control} name="sowingDate" render={({ field }) => ( <FormItem><FormLabel>Sowing Month</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a month" /></SelectTrigger></FormControl><SelectContent>{sowingMonths.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                            <div className="flex justify-end">
+                               <Button type="submit" disabled={isLoading || !predictionForm.formState.isValid} className="w-full">{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Predict & Analyze</Button>
                             </div>
                         </form>
                     </Form>
                 </div>
 
                 {prediction && (
-                    <div className="p-6 border-2 border-primary/50 rounded-lg bg-background/50 space-y-6 animate-in fade-in-50 duration-500">
+                    <div className="p-6 border-2 border-primary/20 rounded-lg bg-primary/5 space-y-6 animate-in fade-in-50 duration-500">
                         <div className="text-center">
-                            <h3 className="text-lg font-semibold">AI-Powered Insights for {selectedCrop}</h3>
-                            <div className="flex justify-center items-baseline gap-8 mt-2">
+                            <h3 className="text-lg font-semibold text-primary-foreground/90">AI-Powered Insights for {selectedCrop}</h3>
+                            <div className="flex justify-center items-baseline gap-2 mt-2">
                                 <div>
                                     <p className="text-5xl font-bold text-primary">{prediction.predictedYieldTonnesPerAcre.toFixed(2)}</p>
-                                    <p className="text-muted-foreground">Tonnes / Acre</p>
+                                    <p className="text-sm text-muted-foreground font-medium">Tonnes / Acre (Predicted)</p>
                                 </div>
                             </div>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {enhancementTips && enhancementTips.length > 0 && (
-                            <Card>
+                            <Card className="bg-background/80">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2"><Lightbulb className="h-5 w-5 text-primary" /> Yield Enhancement Tips</CardTitle>
+                                    <CardTitle className="flex items-center gap-2 text-lg"><Lightbulb className="h-5 w-5 text-primary" /> Yield Enhancement Tips</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                     {enhancementTips.map((tip, index) => (
-                                        <div key={index} className="flex gap-3 items-start">
+                                        <div key={index} className="flex gap-3 items-start p-2 rounded-md bg-background">
                                             <ChevronRight className="w-4 h-4 mt-1 text-primary flex-shrink-0"/>
                                             <div>
-                                                <p className="font-semibold">{tip.title}</p>
-                                                <p className="text-sm text-muted-foreground">{tip.description}</p>
+                                                <p className="font-semibold text-sm">{tip.title}</p>
+                                                <p className="text-xs text-muted-foreground">{tip.description}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -189,9 +206,9 @@ function PredictionPageContent() {
                             </Card>
                             )}
                             {analysis && (
-                            <Card>
+                            <Card className="bg-background/80">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-accent" /> Market Analysis</CardTitle>
+                                    <CardTitle className="flex items-center gap-2 text-lg"><TrendingUp className="h-5 w-5 text-accent" /> Market Analysis</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <p className="text-sm text-foreground/90">{analysis.analysis}</p>
@@ -200,7 +217,7 @@ function PredictionPageContent() {
                             )}
                         </div>
                         <div className="flex justify-center pt-4">
-                            <Button onClick={handleReset}>Plan Another Cycle</Button>
+                            <Button onClick={handleReset} variant="secondary">Plan Another Cycle</Button>
                         </div>
                     </div>
                 )}
@@ -212,7 +229,7 @@ function PredictionPageContent() {
 
 export default function PredictionPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
             <PredictionPageContent />
         </Suspense>
     )

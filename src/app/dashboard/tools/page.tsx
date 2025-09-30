@@ -86,8 +86,11 @@ export default function ToolsPage() {
   };
   
   const handleSelectCrop = (cropName: string) => {
-    const params = new URLSearchParams(recommendationForm.getValues() as any);
+    const params = new URLSearchParams();
+    const formValues = recommendationForm.getValues();
     params.set('crop', cropName);
+    params.set('state', formValues.state);
+    params.set('soilType', formValues.soilType);
     router.push(`/dashboard/tools/prediction?${params.toString()}`);
   }
 
@@ -108,13 +111,15 @@ export default function ToolsPage() {
                         Step 1: Find the Best Crop for Your Land
                     </h3>
                     <Form {...recommendationForm}>
-                        <form onSubmit={recommendationForm.handleSubmit(handleGetRecommendations)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                        <form onSubmit={recommendationForm.handleSubmit(handleGetRecommendations)} className="space-y-4">
+                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FormField control={recommendationForm.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled><FormControl><SelectTrigger><SelectValue placeholder="Select your state" /></SelectTrigger></FormControl><SelectContent>{indianStates.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                             <FormField control={recommendationForm.control} name="soilType" render={({ field }) => (<FormItem><FormLabel>Soil Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select soil type" /></SelectTrigger></FormControl><SelectContent>{odishaSoilTypes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                             <FormField control={recommendationForm.control} name="rainfall" render={({ field }) => ( <FormItem><FormLabel>Annual Rainfall (mm)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={recommendationForm.control} name="temperature" render={({ field }) => ( <FormItem><FormLabel>Avg. Temp (°C)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={recommendationForm.control} name="ph" render={({ field }) => ( <FormItem><FormLabel>Soil pH</FormLabel><FormControl><Input type="number" step="0.1" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <div className="flex justify-end md:col-span-2 lg:col-span-5">
+                            <FormField control={recommendationForm.control} name="ph" render={({ field }) => ( <FormItem className="md:col-span-2 lg:col-span-4"><FormLabel>Soil pH</FormLabel><FormControl><Input type="number" step="0.1" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                           </div>
+                            <div className="flex justify-end">
                                 <Button type="submit" disabled={isLoading}>{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Get Recommendations</Button>
                             </div>
                         </form>
@@ -122,19 +127,19 @@ export default function ToolsPage() {
                 </div>
 
                 {recommendations && (
-                    <div className="p-6 border-2 border-primary/20 rounded-lg bg-background/50 animate-in fade-in-50 duration-500">
+                    <div className="p-6 border-2 border-primary/20 rounded-lg bg-primary/5 animate-in fade-in-50 duration-500">
                         <h3 className="text-lg font-semibold mb-4">AI Recommendations:</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {recommendations.map(rec => {
                                 const emoji = cropEmojis[rec.cropName.toLowerCase()] || cropEmojis['default'];
                                 return (
-                                  <Card key={rec.cropName} className="overflow-hidden group cursor-pointer transition-all hover:border-primary hover:bg-primary/5 flex flex-col" onClick={() => handleSelectCrop(rec.cropName)}>
+                                  <Card key={rec.cropName} className="overflow-hidden group cursor-pointer transition-all hover:border-primary hover:shadow-lg hover:-translate-y-1 flex flex-col" onClick={() => handleSelectCrop(rec.cropName)}>
                                       <CardContent className="p-4 flex flex-col items-center justify-center text-center flex-grow">
-                                        <div className="text-6xl mb-4">{emoji}</div>
+                                        <div className="text-6xl mb-4 transition-transform duration-300 group-hover:scale-110">{emoji}</div>
                                         <p className="font-bold text-lg">{rec.cropName}</p>
                                         <p className="text-sm text-muted-foreground mt-1 flex-grow">{rec.reason}</p>
                                       </CardContent>
-                                      <div className="flex items-center justify-center text-primary font-semibold text-sm p-3 bg-primary/5 group-hover:bg-primary/10 transition-colors">
+                                      <div className="flex items-center justify-center text-primary font-semibold text-sm p-3 bg-primary/10 group-hover:bg-primary/20 transition-colors">
                                           <span>Predict Yield</span>
                                           <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
                                       </div>
@@ -143,8 +148,8 @@ export default function ToolsPage() {
                             })}
                         </div>
                          <div className="text-center mt-6">
-                            <p className="text-muted-foreground text-sm">Or, select a different crop for analysis:</p>
-                            <Button variant="link" onClick={() => handleSelectCrop("custom")}>Choose a different crop <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                            <p className="text-muted-foreground text-sm">Or, analyze a different crop:</p>
+                            <Button variant="link" onClick={() => handleSelectCrop("custom")}>Choose a custom crop <ArrowRight className="w-4 h-4 ml-2" /></Button>
                         </div>
                     </div>
                 )}

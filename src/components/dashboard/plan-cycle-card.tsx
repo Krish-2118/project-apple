@@ -7,7 +7,7 @@ import { ArrowRight, BrainCircuit } from "lucide-react";
 
 export function PlanCycleCard() {
     return (
-        <Card className="bg-primary/5 dark:bg-primary/10 border-primary/20">
+        <Card className="bg-primary/5 dark:bg-primary/10 border-primary/20 hover:border-primary/40 transition-colors">
             <CardHeader>
                 <div className="flex justify-between items-start">
                     <div>
@@ -15,7 +15,7 @@ export function PlanCycleCard() {
                             <BrainCircuit className="w-6 h-6 text-primary"/>
                             <span>Plan Your Next Farming Cycle</span>
                         </CardTitle>
-                        <CardDescription>Use AI-powered tools to get yield predictions, crop recommendations, and market analysis.</CardDescription>
+                        <CardDescription>Use our AI Assistant to get crop recommendations, yield predictions, and market analysis.</CardDescription>
                     </div>
                 </div>
             </CardHeader>
