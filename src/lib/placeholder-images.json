@@ -9,50 +9,56 @@
     {
       "id": "rice",
       "description": "Lush green paddy fields.",
-      "imageUrl": "https://images.unsplash.com/photo-1555980483-93e7b3529e1a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxyaWNlJTIwcGFkZHl8ZW58MHx8fHwxNzU5MTA5NTk3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1536368348972-76b322f2115c?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "rice paddy"
     },
     {
       "id": "maize",
       "description": "A field of mature maize crops.",
-      "imageUrl": "https://images.unsplash.com/photo-1602867741746-6df80f40b3f6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxtYWl6ZSUyMGZpZWxkfGVufDB8fHx8MTc1OTEzMzYwOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1599300052349-bf273c3349d9?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "maize field"
     },
     {
       "id": "jute",
       "description": "Tall jute plants in a field.",
-      "imageUrl": "https://images.unsplash.com/photo-1629189575569-dfcf066e42eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxqdXRlJTIwcGxhbnR8ZW58MHx8fHwxNzU5MjI1NDk3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1629189575569-dfcf066e42eb?q=80&w=1974&auto=format&fit=crop",
       "imageHint": "jute plant"
     },
     {
       "id": "groundnut",
       "description": "Groundnut plants with pods.",
-      "imageUrl": "https://images.unsplash.com/photo-1699959544411-2f67f8b5c687?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxncm91bmRudXQlMjBwbGFudHxlbnwwfHx8fDE3NTkyMjU0OTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1591392393399-2473a20707c5?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "groundnut plant"
     },
     {
       "id": "pulses",
       "description": "Various types of pulses in bowls.",
-      "imageUrl": "https://images.unsplash.com/photo-1707129746224-213036e7f6b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsZW50aWxzJTIwYmVhbnN8ZW58MHx8fHwxNzU5MjI1NDk3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1589923188902-cE47a83681a8?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "lentils beans"
     },
     {
       "id": "sugarcane",
       "description": "A dense sugarcane plantation.",
-      "imageUrl": "https://images.unsplash.com/photo-1688176886580-b06b45f0beac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxzdWdhcmNhbmUlMjBmaWVsZHxlbnwwfHx8fDE3NTkyMjU0OTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1629189575569-dfcf066e42eb?q=80&w=1974&auto=format&fit=crop",
       "imageHint": "sugarcane field"
     },
     {
       "id": "wheat",
       "description": "Golden wheat fields ready for harvest.",
-      "imageUrl": "https://images.unsplash.com/photo-1594842059196-5b6b8fa73187?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx3aGVhdCUyMGZpZWxkfGVufDB8fHx8MTc1OTEzNDYwM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1542274368-443d691d7a6d?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "wheat field"
     },
     {
       "id": "cotton",
       "description": "Cotton bolls on a plant.",
-      "imageUrl": "https://images.unsplash.com/photo-1502395809857-fd80069897d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjb3R0b24lMjBwbGFudHxlbnwwfHx8fDE3NTkyMjU0OTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1619379099898-e6b99c5a1f2a?q=80&w=1974&auto=format&fit=crop",
       "imageHint": "cotton plant"
+    },
+    {
+      "id": "custom",
+      "description": "A farmer working in a field.",
+      "imageUrl": "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop",
+      "imageHint": "farmer field"
     },
     {
       "id": "default",
