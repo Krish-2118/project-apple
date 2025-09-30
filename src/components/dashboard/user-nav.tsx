@@ -12,10 +12,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
-import { LogOut, Settings, User as UserIcon } from "lucide-react";
+import { Settings, User as UserIcon } from "lucide-react";
 
 export function UserNav() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   
   return (
     <DropdownMenu>
@@ -47,11 +47,6 @@ export function UserNav() {
             <span>Settings</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

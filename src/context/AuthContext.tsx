@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface User {
   name: string;
@@ -11,43 +10,15 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (userData: User) => void;
-  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [user] = useState<User | null>({ name: 'Demo User', phone: '+91 98765 43210' });
+  const [loading] = useState(false);
 
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('indifarm-user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      localStorage.removeItem('indifarm-user');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const login = (userData: User) => {
-    localStorage.setItem('indifarm-user', JSON.stringify(userData));
-    setUser(userData);
-  };
-
-  const logout = () => {
-    localStorage.removeItem('indifarm-user');
-    setUser(null);
-    router.push('/login');
-  };
-
-  const value = { user, loading, login, logout };
+  const value = { user, loading };
 
   return (
     <AuthContext.Provider value={value}>

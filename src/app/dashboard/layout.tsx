@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Bell,
   Home,
@@ -10,7 +10,6 @@ import {
   Users,
 } from "lucide-react";
 
-import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/dashboard/user-nav";
 import {
@@ -23,7 +22,6 @@ import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { IndiFarmIcon } from "@/components/icons";
 
@@ -69,23 +67,6 @@ function DashboardHeader() {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  React.useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login");
-    }
-  }, [user, loading, router]);
-
-  if (loading || !user) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-primary animate-pulse">Loading dashboard...</div>
-      </div>
-    );
-  }
-
   return (
     <SidebarProvider>
       <Sidebar>
