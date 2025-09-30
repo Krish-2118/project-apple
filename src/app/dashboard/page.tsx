@@ -3,6 +3,7 @@ import { WeatherCard } from "@/components/dashboard/weather-card";
 import { InventoryCard } from "@/components/dashboard/inventory-card";
 import { FarmsCard } from "@/components/dashboard/farms-card";
 import { NotificationsCard } from "@/components/dashboard/notifications-card";
+import { PlanCycleCard } from "@/components/dashboard/plan-cycle-card";
 
 export default function DashboardPage() {
   return (
@@ -12,6 +13,7 @@ export default function DashboardPage() {
       </div>
       
       <div className="lg:col-span-2 grid gap-6 content-start">
+        <PlanCycleCard />
         <FarmsCard />
         <NotificationsCard />
       </div>

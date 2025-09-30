@@ -4,13 +4,11 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
   Home,
   Users,
-  Leaf
 } from "lucide-react";
+import { ThemeProvider } from "@/components/theme-provider";
 
-import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/dashboard/user-nav";
 import {
   Sidebar,
@@ -28,7 +26,6 @@ import { IndiFarmIcon } from "@/components/icons";
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
-  { href: "/dashboard/tools", icon: Leaf, label: "AI Tools" },
   { href: "/dashboard/community", icon: Users, label: "Community" },
 ];
 
@@ -58,10 +55,6 @@ function DashboardHeader() {
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       <SidebarTrigger className="md:hidden" />
       <div className="flex-1"></div>
-      <Button variant="ghost" size="icon" className="rounded-full">
-        <Bell className="h-5 w-5" />
-        <span className="sr-only">Toggle notifications</span>
-      </Button>
       <UserNav />
     </header>
   );
@@ -69,23 +62,30 @@ function DashboardHeader() {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon">
-        <SidebarHeader>
-          <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg">
-              <IndiFarmIcon className="h-8 w-8 text-primary" />
-              <span className="font-headline text-primary-foreground group-data-[collapsible=icon]:hidden">IndiFarm AI</span>
-          </Link>
-        </SidebarHeader>
-        <SidebarContent>
-          <MainNav />
-        </SidebarContent>
-        <SidebarRail />
-      </Sidebar>
-      <SidebarInset className="flex flex-col">
-        <DashboardHeader />
-        <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <SidebarProvider>
+        <Sidebar collapsible="icon">
+          <SidebarHeader>
+            <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg">
+                <IndiFarmIcon className="h-8 w-8 text-primary" />
+                <span className="font-headline text-primary-foreground group-data-[collapsible=icon]:hidden">IndiFarm AI</span>
+            </Link>
+          </SidebarHeader>
+          <SidebarContent>
+            <MainNav />
+          </SidebarContent>
+          <SidebarRail />
+        </Sidebar>
+        <SidebarInset className="flex flex-col">
+          <DashboardHeader />
+          <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+    </ThemeProvider>
   );
 }
