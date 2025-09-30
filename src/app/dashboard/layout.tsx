@@ -7,6 +7,7 @@ import {
   Bell,
   Home,
   Users,
+  Leaf
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import { IndiFarmIcon } from "@/components/icons";
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
+  { href: "/dashboard/tools", icon: Leaf, label: "AI Tools" },
   { href: "/dashboard/community", icon: Users, label: "Community" },
 ];
 
@@ -67,7 +69,7 @@ function DashboardHeader() {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader>
           <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg">
