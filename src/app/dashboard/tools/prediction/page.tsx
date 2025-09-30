@@ -113,7 +113,7 @@ function PredictionPageContent() {
 
   const selectedCrop = predictionForm.watch('cropType');
   const cropEmoji = cropEmojis[selectedCrop.toLowerCase() as keyof typeof cropEmojis] || cropEmojis['default'];
-  const placeholderImage = getPlaceHolderImage(selectedCrop);
+  const placeholderImage = getPlaceHolderImage(selectedCrop || 'default');
 
   return (
     <div className="max-w-4xl mx-auto">
