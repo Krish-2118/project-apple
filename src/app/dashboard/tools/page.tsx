@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -33,8 +32,19 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { BrainCircuit, Loader2, Sparkles, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getPlaceHolderImage } from "@/lib/placeholder-images";
 import { getCropRecommendation, CropRecommendationOutput } from "@/ai/flows/crop-recommendation";
+
+const cropEmojis: { [key: string]: string } = {
+  "rice": "🌾",
+  "wheat": "🌾",
+  "maize": "🌽",
+  "jute": "🌿",
+  "cotton": "⚪",
+  "sugarcane": "🎋",
+  "pulses": "🫘",
+  "groundnut": "🥜",
+  "default": "🌱",
+};
 
 // Focused on Odisha for better predictions
 const indianStates = ["Odisha"];
@@ -92,7 +102,6 @@ export default function ToolsPage() {
                 <CardDescription>A guided tool to help you plan your farming cycle in Odisha.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
-                {/* Step 1: Get Recommendations */}
                 <div className="p-6 border rounded-lg">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" /> 
@@ -117,20 +126,18 @@ export default function ToolsPage() {
                         <h3 className="text-lg font-semibold mb-4">AI Recommendations:</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {recommendations.map(rec => {
-                                const placeholder = getPlaceHolderImage(rec.cropName);
+                                const emoji = cropEmojis[rec.cropName.toLowerCase()] || cropEmojis['default'];
                                 return (
-                                  <Card key={rec.cropName} className="overflow-hidden group cursor-pointer transition-all hover:border-primary hover:bg-primary/5" onClick={() => handleSelectCrop(rec.cropName)}>
-                                      <div className="relative w-full h-40">
-                                          <Image src={placeholder.imageUrl} alt={rec.cropName} fill style={{ objectFit: 'cover' }} data-ai-hint={placeholder.imageHint} className="transition-transform duration-300 group-hover:scale-105" />
-                                      </div>
-                                      <CardContent className="p-4">
+                                  <Card key={rec.cropName} className="overflow-hidden group cursor-pointer transition-all hover:border-primary hover:bg-primary/5 flex flex-col" onClick={() => handleSelectCrop(rec.cropName)}>
+                                      <CardContent className="p-4 flex flex-col items-center justify-center text-center flex-grow">
+                                        <div className="text-6xl mb-4">{emoji}</div>
                                         <p className="font-bold text-lg">{rec.cropName}</p>
-                                        <p className="text-sm text-muted-foreground mt-1">{rec.reason}</p>
-                                        <div className="flex items-center justify-end text-primary font-semibold text-sm mt-4">
-                                            <span>Predict Yield</span>
-                                            <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
-                                        </div>
+                                        <p className="text-sm text-muted-foreground mt-1 flex-grow">{rec.reason}</p>
                                       </CardContent>
+                                      <div className="flex items-center justify-center text-primary font-semibold text-sm p-3 bg-primary/5 group-hover:bg-primary/10 transition-colors">
+                                          <span>Predict Yield</span>
+                                          <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                                      </div>
                                   </Card>
                                 )
                             })}

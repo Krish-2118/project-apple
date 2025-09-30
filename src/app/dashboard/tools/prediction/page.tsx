@@ -7,7 +7,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -18,13 +17,25 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { ArrowLeft, BrainCircuit, Calendar as CalendarIcon, ChevronRight, Lightbulb, Loader2, Sparkles, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getPlaceHolderImage } from '@/lib/placeholder-images';
 
 import { predictYield, PredictYieldOutput } from '@/ai/flows/yield-prediction';
 import { getMarketAnalysis, MarketAnalysisOutput } from '@/ai/flows/market-analysis';
 import { getYieldEnhancementTips, YieldEnhancementOutput } from '@/ai/flows/yield-enhancement';
 
 const cropTypes = ["Rice", "Maize", "Jute", "Groundnut", "Pulses", "Sugarcane", "Wheat", "Cotton"];
+
+const cropEmojis: { [key: string]: string } = {
+  "rice": "🌾",
+  "wheat": "🌾",
+  "maize": "🌽",
+  "jute": "🌿",
+  "cotton": "⚪",
+  "sugarcane": "🎋",
+  "pulses": "🫘",
+  "groundnut": "🥜",
+  "custom": "🌱",
+  "default": "🌱",
+};
 
 const predictionSchema = z.object({
   cropType: z.string().min(1, 'Please select a crop type.'),
@@ -55,7 +66,7 @@ function PredictionPageContent() {
     resolver: zodResolver(predictionSchema),
     defaultValues: {
       cropType: formInputs.crop === 'custom' ? '' : formInputs.crop,
-      area: 1,
+      area: 1, // Default area to 1 acre, since we removed the input
       sowingDate: new Date(),
     },
   });
@@ -83,6 +94,7 @@ function PredictionPageContent() {
       const yieldResult = await predictYield(yieldInput);
       setPrediction(yieldResult);
 
+      // Fetch analysis and tips after getting the prediction
       const [marketResult, tipsResult] = await Promise.all([
         getMarketAnalysis({ cropName: values.cropType }),
         getYieldEnhancementTips({
@@ -105,8 +117,7 @@ function PredictionPageContent() {
   };
 
   const selectedCrop = predictionForm.watch('cropType');
-  const placeholder = getPlaceHolderImage(selectedCrop || formInputs.crop);
-  const area = predictionForm.watch('area');
+  const cropEmoji = cropEmojis[selectedCrop.toLowerCase() as keyof typeof cropEmojis] || cropEmojis['default'];
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -122,11 +133,7 @@ function PredictionPageContent() {
             <CardContent className="space-y-8">
                 <div className="p-6 border rounded-lg">
                     <div className="flex flex-col sm:flex-row gap-6 mb-6">
-                        {(selectedCrop || formInputs.crop !== 'custom') && (
-                             <div className="relative w-full sm:w-48 h-48 sm:h-auto flex-shrink-0 rounded-lg overflow-hidden">
-                                <Image src={placeholder.imageUrl} alt={selectedCrop} fill style={{ objectFit: 'cover' }} data-ai-hint={placeholder.imageHint}/>
-                             </div>
-                        )}
+                        <div className="text-6xl">{cropEmoji}</div>
                         <div>
                              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                 <Sparkles className="h-5 w-5 text-primary" />
@@ -140,11 +147,10 @@ function PredictionPageContent() {
                         </div>
                     </div>
                      <Form {...predictionForm}>
-                        <form onSubmit={predictionForm.handleSubmit(handleGetPrediction)} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <form onSubmit={predictionForm.handleSubmit(handleGetPrediction)} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                             <FormField control={predictionForm.control} name="cropType" render={({ field }) => (<FormItem><FormLabel>Selected Crop</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a crop" /></SelectTrigger></FormControl><SelectContent>{[...new Set(cropTypes)].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                            <FormField control={predictionForm.control} name="area" render={({ field }) => ( <FormItem><FormLabel>Area (in acres)</FormLabel><FormControl><Input type="number" step="0.1" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={predictionForm.control} name="sowingDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Sowing Date</FormLabel><Popover><PopoverTrigger asChild><Button variant={"outline"} className={cn("w-full justify-start pl-3 text-left font-normal", !field.value && "text-muted-foreground" )}>{field.value ? (format(field.value, "PPP")) : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("2020-01-01")} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-                            <div className="md:col-span-3 flex justify-end gap-2">
+                            <div className="md:col-span-2 flex justify-end gap-2">
                                <Button type="submit" disabled={isLoading || !predictionForm.formState.isValid}>{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Predict & Analyze</Button>
                             </div>
                         </form>
@@ -159,10 +165,6 @@ function PredictionPageContent() {
                                 <div>
                                     <p className="text-5xl font-bold text-primary">{prediction.predictedYieldTonnesPerAcre.toFixed(2)}</p>
                                     <p className="text-muted-foreground">Tonnes / Acre</p>
-                                </div>
-                                 <div>
-                                    <p className="text-5xl font-bold text-secondary-foreground/80">{(prediction.predictedYieldTonnesPerAcre * area).toFixed(2)}</p>
-                                    <p className="text-muted-foreground">Total Tonnes</p>
                                 </div>
                             </div>
                         </div>
