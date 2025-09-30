@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, BrainCircuit, Droplets, Leaf, Loader2, Mountain, Sun, Thermometer, Cloudy } from 'lucide-react';
 import Image from 'next/image';
 
 import {
@@ -52,6 +52,13 @@ export type ResultsData = {
   marketResult: MarketAnalysisOutput;
   tipsResult: YieldEnhancementOutput;
   crop: string;
+  params: {
+    soilType: string;
+    state: string;
+    rainfall: string;
+    temperature: string;
+    ph: string;
+  }
 };
 
 const cropTypes = [
@@ -111,6 +118,9 @@ function PredictionPageContent() {
       crop: searchParams.get('crop') || 'custom',
       state: searchParams.get('state') || 'Odisha',
       soilType: searchParams.get('soilType') || '',
+      rainfall: searchParams.get('rainfall') || '1500',
+      temperature: searchParams.get('temperature') || '28',
+      ph: searchParams.get('ph') || '6.5',
     }),
     [searchParams]
   );
@@ -154,10 +164,14 @@ function PredictionPageContent() {
     }
     
     try {
-      const [yieldResult, marketResult, tipsResult] = await Promise.all([
-        predictYield(predictionBaseInput),
+      const yieldResult = await predictYield(predictionBaseInput);
+      
+      const [marketResult, tipsResult] = await Promise.all([
         getMarketAnalysis({ cropName: values.cropType, state: formInputs.state }),
-        getYieldEnhancementTips({ ...predictionBaseInput, predictedYield: 0 }),
+        getYieldEnhancementTips({ 
+            ...predictionBaseInput, 
+            predictedYield: yieldResult.predictedYieldTonnesPerAcre 
+        }),
       ]);
       
       const results: ResultsData = {
@@ -165,6 +179,13 @@ function PredictionPageContent() {
           marketResult,
           tipsResult,
           crop: values.cropType,
+          params: {
+            soilType: formInputs.soilType,
+            state: formInputs.state,
+            rainfall: formInputs.rainfall,
+            temperature: formInputs.temperature,
+            ph: formInputs.ph,
+          }
       };
 
       // Store results in session storage to pass to the results page
@@ -210,7 +231,7 @@ function PredictionPageContent() {
               AI Analysis for {selectedCrop || 'Your Crop'}
             </CardTitle>
             <CardDescription>
-              Step 3: Provide Sowing Details for Prediction & Analysis
+              Provide Sowing Details for Prediction & Analysis
             </CardDescription>
             <div className="text-xs text-muted-foreground mt-2 space-x-4">
               <span>
@@ -225,87 +246,108 @@ function PredictionPageContent() {
           </div>
         </div>
         <CardContent className="p-6">
-          <div className="p-6 border rounded-lg">
-            <h3 className="text-lg font-semibold mb-4">Provide Sowing Details</h3>
-            <Form {...predictionForm}>
-              <form
-                onSubmit={predictionForm.handleSubmit(handleFinalSubmit)}
-                className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"
-              >
-                <FormField
-                  control={predictionForm.control}
-                  name="cropType"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-1">
-                      <FormLabel>Selected Crop</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a crop" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {[...new Set(cropTypes)].map((c) => {
-                             const emoji = cropEmojis[c.toLowerCase() as keyof typeof cropEmojis] || cropEmojis['default'];
-                             return (
-                                <SelectItem key={c} value={c}>
-                                  <div className="flex items-center gap-2">
-                                    <span>{emoji}</span>
-                                    <span>{c}</span>
-                                  </div>
-                                </SelectItem>
-                             )
-                          })}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={predictionForm.control}
-                  name="sowingDate"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-1">
-                      <FormLabel>Sowing Month</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a month" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {sowingMonths.map((m) => (
-                            <SelectItem key={m} value={m}>
-                              {m}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex justify-end md:col-start-3">
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !predictionForm.formState.isValid}
-                    className="w-full md:w-auto"
-                  >
-                    {isLoading && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+            <div className="md:col-span-2 p-6 border rounded-lg">
+                <h3 className="text-lg font-semibold mb-4">Provide Sowing Details</h3>
+                <Form {...predictionForm}>
+                <form
+                    onSubmit={predictionForm.handleSubmit(handleFinalSubmit)}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"
+                >
+                    <FormField
+                    control={predictionForm.control}
+                    name="cropType"
+                    render={({ field }) => (
+                        <FormItem className="md:col-span-1">
+                        <FormLabel>Selected Crop</FormLabel>
+                        <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                        >
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a crop" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {[...new Set(cropTypes)].map((c) => {
+                                const emoji = cropEmojis[c.toLowerCase() as keyof typeof cropEmojis] || cropEmojis['default'];
+                                return (
+                                    <SelectItem key={c} value={c}>
+                                    <div className="flex items-center gap-2">
+                                        <span>{emoji}</span>
+                                        <span>{c}</span>
+                                    </div>
+                                    </SelectItem>
+                                )
+                            })}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
                     )}
-                    Predict & Analyze
-                  </Button>
-                </div>
-              </form>
-            </Form>
+                    />
+                    <FormField
+                    control={predictionForm.control}
+                    name="sowingDate"
+                    render={({ field }) => (
+                        <FormItem className="md:col-span-1">
+                        <FormLabel>Sowing Month</FormLabel>
+                        <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                        >
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a month" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {sowingMonths.map((m) => (
+                                <SelectItem key={m} value={m}>
+                                {m}
+                                </SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <div className="flex justify-end md:col-start-3">
+                    <Button
+                        type="submit"
+                        disabled={isLoading || !predictionForm.formState.isValid}
+                        className="w-full md:w-auto"
+                    >
+                        {isLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        Predict & Analyze
+                    </Button>
+                    </div>
+                </form>
+                </Form>
+            </div>
+            <div className="md:col-span-1 space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2"><BrainCircuit className="h-5 w-5"/>Key Considerations</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm text-muted-foreground space-y-2">
+                        <div className="flex gap-2"><Sun className="h-4 w-4 mt-1"/><span>Sowing in the optimal month is crucial for yield.</span></div>
+                        <div className="flex gap-2"><Leaf className="h-4 w-4 mt-1"/><span>This analysis is specific to your chosen state and soil type.</span></div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2"><BrainCircuit className="h-5 w-5"/>Expected Timeline</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm text-muted-foreground">
+                        Analysis may take 20-30 seconds to complete as we process data from multiple AI models.
+                    </CardContent>
+                </Card>
+            </div>
           </div>
         </CardContent>
       </Card>

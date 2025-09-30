@@ -51,6 +51,7 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert agricultural advisor in India.
   For a farmer growing {{{cropType}}} in {{{state}}} on {{{soilType}}} soil with a predicted yield of {{{predictedYield}}} tonnes/acre,
   provide up to 3 actionable, high-impact tips to enhance the yield.
+  The current predicted yield is a key piece of context; tailor your advice to be appropriate for this level of output (e.g., don't suggest basic tips if the yield is already high).
   Focus on practical advice related to pest control, nutrient management, irrigation, or other relevant farming practices.
   For each tip, provide a clear title and a concise description.
   `,

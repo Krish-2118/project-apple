@@ -9,6 +9,10 @@ import {
   Loader2,
   MapPin,
   TrendingUp,
+  Mountain,
+  Cloudy,
+  Thermometer,
+  Droplets,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -22,6 +26,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { getPlaceHolderImage } from '@/lib/placeholder-images';
 import type { ResultsData } from '../prediction/page';
+import { Separator } from '@/components/ui/separator';
 
 const cropEmojis: { [key: string]: string } = {
   rice: '🌾',
@@ -50,7 +55,15 @@ function ResultsPageContent() {
         router.replace('/dashboard/tools');
       }
     } else {
-      router.replace('/dashboard/tools');
+      // If no results, wait a moment then check again, or redirect.
+      setTimeout(() => {
+        const freshResults = sessionStorage.getItem('analysisResults');
+        if (freshResults) {
+          setResults(JSON.parse(freshResults));
+        } else {
+          router.replace('/dashboard/tools');
+        }
+      }, 500);
     }
   }, [router]);
 
@@ -67,7 +80,7 @@ function ResultsPageContent() {
     );
   }
 
-  const { yieldResult, marketResult, tipsResult, crop } = results;
+  const { yieldResult, marketResult, tipsResult, crop, params } = results;
   const cropEmoji =
     cropEmojis[crop.toLowerCase() as keyof typeof cropEmojis] ||
     cropEmojis['default'];
@@ -96,10 +109,18 @@ function ResultsPageContent() {
               Analysis Report for {crop}
             </CardTitle>
             <CardDescription>
-              Here are the AI-powered insights for your crop.
+              AI-powered insights for your crop based on the provided parameters.
             </CardDescription>
           </div>
         </div>
+        {params && (
+         <div className="grid grid-cols-2 md:grid-cols-4 text-center text-sm p-4 bg-muted/50 border-t">
+            <div className="flex flex-col items-center gap-1"><Mountain className="w-5 h-5 text-muted-foreground"/><div><span className="font-semibold">{params.soilType}</span><p className="text-xs text-muted-foreground">Soil</p></div></div>
+            <div className="flex flex-col items-center gap-1"><Cloudy className="w-5 h-5 text-muted-foreground"/><div><span className="font-semibold">{params.rainfall}mm</span><p className="text-xs text-muted-foreground">Rainfall</p></div></div>
+            <div className="flex flex-col items-center gap-1"><Thermometer className="w-5 h-5 text-muted-foreground"/><div><span className="font-semibold">{params.temperature}°C</span><p className="text-xs text-muted-foreground">Temp</p></div></div>
+            <div className="flex flex-col items-center gap-1"><Droplets className="w-5 h-5 text-muted-foreground"/><div><span className="font-semibold">{params.ph}</span><p className="text-xs text-muted-foreground">pH</p></div></div>
+        </div>
+        )}
       </Card>
       
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -120,6 +141,7 @@ function ResultsPageContent() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <p className="text-sm text-foreground/90">{marketResult.analysis}</p>
+                     <Separator />
                     <div>
                         <h4 className="font-semibold mb-2">Nearby Mandi Prices:</h4>
                         <div className="space-y-2 text-sm">
@@ -144,7 +166,9 @@ function ResultsPageContent() {
                 <CardContent className="space-y-4">
                     {tipsResult.tips.map((tip, index) => (
                         <div key={index} className="flex gap-4 items-start p-4 rounded-lg bg-primary/5 border border-primary/10">
-                            <ChevronRight className="w-5 h-5 mt-1 text-primary flex-shrink-0"/>
+                             <div className="flex h-6 w-6 rounded-full bg-primary text-primary-foreground items-center justify-center text-sm font-bold flex-shrink-0 mt-1">
+                                {index + 1}
+                            </div>
                             <div>
                                 <p className="font-semibold text-base">{tip.title}</p>
                                 <p className="text-sm text-muted-foreground">{tip.description}</p>
