@@ -34,8 +34,6 @@ const marketAnalysisFlow = ai.defineFlow(
   },
   async input => {
     // In a real app, you might have a service to get real market data.
-    // Here we simulate it with a more detailed AI call.
-    await new Promise(resolve => setTimeout(resolve, 1200)); 
     const { output } = await prompt(input);
     return output!;
   }
