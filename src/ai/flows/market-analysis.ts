@@ -9,14 +9,14 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
-export const MarketAnalysisInputSchema = z.object({
+const MarketAnalysisInputSchema = z.object({
   cropName: z.string().describe('The name of the crop to analyze.'),
 });
 export type MarketAnalysisInput = z.infer<typeof MarketAnalysisInputSchema>;
 
-export const MarketAnalysisOutputSchema = z.object({
+const MarketAnalysisOutputSchema = z.object({
   analysis: z.string().describe('A concise market analysis including current price trends, demand, and selling advice.'),
 });
 export type MarketAnalysisOutput = z.infer<typeof MarketAnalysisOutputSchema>;

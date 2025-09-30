@@ -9,15 +9,15 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
-export const CropRecommendationInputSchema = z.object({
+const CropRecommendationInputSchema = z.object({
   soilType: z.string().describe('The type of soil in the field (e.g., Alluvial, Black, Red, Sandy).'),
   state: z.string().describe('The Indian state where the field is located.'),
 });
 export type CropRecommendationInput = z.infer<typeof CropRecommendationInputSchema>;
 
-export const CropRecommendationOutputSchema = z.object({
+const CropRecommendationOutputSchema = z.object({
   recommendations: z.array(z.object({
     cropName: z.string().describe('The name of the recommended crop.'),
     reason: z.string().describe('A brief reason why this crop is suitable.'),
