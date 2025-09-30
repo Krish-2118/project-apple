@@ -11,12 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/context/AuthContext";
 import { Settings, User as UserIcon } from "lucide-react";
 
+// Mock user data
+const user = {
+    name: "Demo User",
+    phone: "+91 98765 43210"
+}
+
 export function UserNav() {
-  const { user } = useAuth();
-  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

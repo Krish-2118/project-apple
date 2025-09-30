@@ -22,6 +22,7 @@ import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { IndiFarmIcon } from "@/components/icons";
 
@@ -69,7 +70,7 @@ function DashboardHeader() {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar collapsible="icon">
         <SidebarHeader>
           <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg">
               <IndiFarmIcon className="h-8 w-8 text-primary" />
@@ -79,6 +80,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <SidebarContent>
           <MainNav />
         </SidebarContent>
+        <SidebarRail />
       </Sidebar>
       <SidebarInset className="flex flex-col">
         <DashboardHeader />

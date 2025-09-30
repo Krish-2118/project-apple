@@ -1,11 +1,13 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function WelcomeCard() {
-  const { user } = useAuth();
-  
+// Mock user data
+const user = {
+    name: "Demo User",
+}
+
+export function WelcomeCard() {  
   return (
     <Card>
       <CardHeader>
