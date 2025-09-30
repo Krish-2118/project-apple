@@ -8,7 +8,6 @@ import {
   Users,
   BrainCircuit,
 } from "lucide-react";
-import { ThemeProvider } from "@/components/theme-provider";
 
 import { UserNav } from "@/components/dashboard/user-nav";
 import {
@@ -64,30 +63,23 @@ function DashboardHeader() {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <SidebarProvider defaultOpen={false}>
-        <Sidebar collapsible="icon">
-          <SidebarHeader>
-            <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg">
-                <IndiFarmIcon className="h-8 w-8 text-primary" />
-                <span className="font-headline text-primary-foreground group-data-[collapsible=icon]:hidden">IndiFarm AI</span>
-            </Link>
-          </SidebarHeader>
-          <SidebarContent>
-            <MainNav />
-          </SidebarContent>
-          <SidebarRail />
-        </Sidebar>
-        <SidebarInset className="flex flex-col">
-          <DashboardHeader />
-          <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
-        </SidebarInset>
-      </SidebarProvider>
-    </ThemeProvider>
+    <SidebarProvider defaultOpen={false}>
+      <Sidebar collapsible="icon">
+        <SidebarHeader>
+          <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg">
+              <IndiFarmIcon className="h-8 w-8 text-primary" />
+              <span className="font-headline text-primary-foreground group-data-[collapsible=icon]:hidden">IndiFarm AI</span>
+          </Link>
+        </SidebarHeader>
+        <SidebarContent>
+          <MainNav />
+        </SidebarContent>
+        <SidebarRail />
+      </Sidebar>
+      <SidebarInset className="flex flex-col">
+        <DashboardHeader />
+        <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
