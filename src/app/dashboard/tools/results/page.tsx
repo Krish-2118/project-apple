@@ -25,7 +25,7 @@ import type { ResultsData } from '../prediction/page';
 
 const cropEmojis: { [key: string]: string } = {
   rice: '🌾',
-  wheat: '🌾',
+  wheat: '🍞',
   maize: '🌽',
   jute: '🌿',
   cotton: '⚪',
@@ -107,7 +107,7 @@ function ResultsPageContent() {
                     <CardTitle className="text-xl font-headline">Yield Prediction</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                    <p className="text-5xl font-bold text-primary">{yieldResult.predictedYieldTonnesPerAcre.toFixed(2)}</p>
+                    <p className="text-6xl font-bold text-primary">{yieldResult.predictedYieldTonnesPerAcre.toFixed(2)}</p>
                     <p className="text-muted-foreground font-medium">Tonnes / Acre</p>
                 </CardContent>
             </Card>

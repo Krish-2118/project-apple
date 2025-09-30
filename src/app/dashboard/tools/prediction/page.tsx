@@ -81,7 +81,7 @@ const sowingMonths = [
 
 const cropEmojis: { [key: string]: string } = {
   rice: '🌾',
-  wheat: '🌾',
+  wheat: '🍞',
   maize: '🌽',
   jute: '🌿',
   cotton: '⚪',
