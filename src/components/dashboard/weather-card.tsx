@@ -17,11 +17,11 @@ const weatherData = {
     low: 25,
   },
   forecast: [
-    { day: "Mon", icon: <Cloudy className="h-6 w-6 text-gray-400" />, high: 33, low: 26 },
-    { day: "Tue", icon: <CloudRain className="h-6 w-6 text-blue-400" />, high: 30, low: 24 },
-    { day: "Wed", icon: <CloudRain className="h-6 w-6 text-blue-400" />, high: 29, low: 23 },
-    { day: "Thu", icon: <Cloud className="h-6 w-6 text-gray-500" />, high: 31, low: 25 },
-    { day: "Fri", icon: <Sun className="h-6 w-6 text-yellow-500" />, high: 34, low: 26 },
+    { day: "Mon", icon: <Cloudy className="h-6 w-6 text-gray-400" />, high: 33 },
+    { day: "Tue", icon: <CloudRain className="h-6 w-6 text-blue-400" />, high: 30 },
+    { day: "Wed", icon: <CloudRain className="h-6 w-6 text-blue-400" />, high: 29 },
+    { day: "Thu", icon: <Cloud className="h-6 w-6 text-gray-500" />, high: 31 },
+    { day: "Fri", icon: <Sun className="h-6 w-6 text-yellow-500" />, high: 34 },
   ],
 };
 
