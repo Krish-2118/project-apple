@@ -1,7 +1,7 @@
 import { WelcomeCard } from "@/components/dashboard/welcome-card";
 import { WeatherCard } from "@/components/dashboard/weather-card";
 import { InventoryCard } from "@/components/dashboard/inventory-card";
-import { FarmingCycleAssistant } from "@/components/dashboard/farming-cycle-assistant";
+import { AiAssistant } from "@/components/dashboard/ai-assistant";
 import { FarmsCard } from "@/components/dashboard/farms-card";
 import { NotificationsCard } from "@/components/dashboard/notifications-card";
 
@@ -12,7 +12,7 @@ export default function DashboardPage() {
         <WelcomeCard />
       </div>
       <div className="lg:col-span-2">
-        <FarmingCycleAssistant />
+        <AiAssistant />
       </div>
       <div className="lg:col-span-1 grid gap-6">
         <NotificationsCard />
