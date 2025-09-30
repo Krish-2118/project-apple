@@ -6,14 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import {
-  ArrowLeft,
-  ChevronRight,
-  Lightbulb,
-  Loader2,
-  MapPin,
-  TrendingUp,
-} from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 import {
@@ -54,10 +47,11 @@ import {
 } from '@/ai/flows/yield-enhancement';
 import { getPlaceHolderImage } from '@/lib/placeholder-images';
 
-type ResultsData = {
+export type ResultsData = {
   yieldResult: PredictYieldOutput;
   marketResult: MarketAnalysisOutput;
   tipsResult: YieldEnhancementOutput;
+  crop: string;
 };
 
 const cropTypes = [
@@ -111,7 +105,6 @@ function PredictionPageContent() {
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<ResultsData | null>(null);
 
   const formInputs = useMemo(
     () => ({
@@ -137,12 +130,11 @@ function PredictionPageContent() {
     }
   }, [searchParams, predictionForm]);
 
-  const handleGetPrediction = async (values: PredictionFormValues) => {
+  const handleFinalSubmit = async (values: PredictionFormValues) => {
     setIsLoading(true);
-    setResults(null);
-
+    
     const monthIndex = sowingMonths.indexOf(values.sowingDate);
-    const fullDate = new Date(new Date().getFullYear(), monthIndex, 15); // Use 15th to be safe
+    const fullDate = new Date(new Date().getFullYear(), monthIndex, 15);
 
     const predictionBaseInput = {
       cropType: values.cropType,
@@ -152,39 +144,36 @@ function PredictionPageContent() {
     };
 
     if (!predictionBaseInput.soilType) {
-      toast({
-        variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Soil type is required. Please go back and select it.',
-      });
-      setIsLoading(false);
-      return;
+        toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Soil type is required. Please go back and select it.",
+        });
+        setIsLoading(false);
+        return;
     }
-
+    
     try {
-      // Run all AI models in parallel
       const [yieldResult, marketResult, tipsResult] = await Promise.all([
         predictYield(predictionBaseInput),
-        getMarketAnalysis({
-          cropName: values.cropType,
-          state: formInputs.state,
-        }),
-        getYieldEnhancementTips({ ...predictionBaseInput, predictedYield: 0 }), // predictedYield is not needed for tips
+        getMarketAnalysis({ cropName: values.cropType, state: formInputs.state }),
+        getYieldEnhancementTips({ ...predictionBaseInput, predictedYield: 0 }),
       ]);
+      
+      const results: ResultsData = {
+          yieldResult,
+          marketResult,
+          tipsResult,
+          crop: values.cropType,
+      };
 
-      setResults({
-        yieldResult,
-        marketResult,
-        tipsResult,
-      });
+      // Store results in session storage to pass to the results page
+      sessionStorage.setItem('analysisResults', JSON.stringify(results));
+      router.push('/dashboard/tools/results');
+
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not fetch all insights. Please try again.',
-      });
+      toast({ variant: "destructive", title: "Error", description: "Could not fetch all insights. Please try again." });
       console.error(error);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -218,10 +207,10 @@ function PredictionPageContent() {
           <div className="absolute bottom-0 left-0 p-6">
             <div className="text-7xl mb-2">{cropEmoji}</div>
             <CardTitle className="font-headline text-3xl">
-              Step 3: AI Analysis for {selectedCrop || 'Your Crop'}
+              AI Analysis for {selectedCrop || 'Your Crop'}
             </CardTitle>
             <CardDescription>
-              Provide sowing details to get your full analysis report.
+              Step 3: Provide Sowing Details for Prediction & Analysis
             </CardDescription>
             <div className="text-xs text-muted-foreground mt-2 space-x-4">
               <span>
@@ -240,7 +229,7 @@ function PredictionPageContent() {
             <h3 className="text-lg font-semibold mb-4">Provide Sowing Details</h3>
             <Form {...predictionForm}>
               <form
-                onSubmit={predictionForm.handleSubmit(handleGetPrediction)}
+                onSubmit={predictionForm.handleSubmit(handleFinalSubmit)}
                 className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"
               >
                 <FormField
@@ -314,75 +303,6 @@ function PredictionPageContent() {
           </div>
         </CardContent>
       </Card>
-      
-      {isLoading && (
-        <div className="flex justify-center items-center p-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="ml-4 text-muted-foreground">Generating your analysis report...</p>
-        </div>
-      )}
-
-      {results && (
-        <div className="p-6 pt-0 animate-in fade-in-50 duration-500">
-            <CardHeader>
-                <CardTitle className='font-headline text-2xl'>Analysis Report</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-1 space-y-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-xl font-headline">Yield Prediction</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                        <p className="text-5xl font-bold text-primary">{results.yieldResult.predictedYieldTonnesPerAcre.toFixed(2)}</p>
-                        <p className="text-muted-foreground font-medium">Tonnes / Acre</p>
-                    </CardContent>
-                </Card>
-
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-xl font-headline"><TrendingUp className="h-6 w-6 text-accent" /> Market Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <p className="text-sm text-foreground/90">{results.marketResult.analysis}</p>
-                        <div>
-                            <h4 className="font-semibold mb-2">Nearby Mandi Prices:</h4>
-                            <div className="space-y-2 text-sm">
-                            {results.marketResult.mandiPrices.map((mandi, index) => (
-                                <div key={index} className="flex justify-between p-2 rounded-md bg-muted/50">
-                                    <span className="flex items-center gap-2"><MapPin className="w-4 h-4"/> {mandi.mandiName}</span>
-                                    <span className="font-mono font-semibold">{mandi.price}</span>
-                                </div>
-                            ))}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-           </div>
-           
-            <div className="lg:col-span-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-xl font-headline"><Lightbulb className="h-6 w-6 text-primary" /> Yield Enhancement Tips</CardTitle>
-                        <CardDescription>Actionable advice to improve your crop outcome.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {results.tipsResult.tips.map((tip, index) => (
-                            <div key={index} className="flex gap-4 items-start p-4 rounded-lg bg-primary/5 border border-primary/10">
-                                <ChevronRight className="w-5 h-5 mt-1 text-primary flex-shrink-0"/>
-                                <div>
-                                    <p className="font-semibold text-base">{tip.title}</p>
-                                    <p className="text-sm text-muted-foreground">{tip.description}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
-            </div>
-            </CardContent>
-        </div>
-      )}
-
     </div>
   );
 }

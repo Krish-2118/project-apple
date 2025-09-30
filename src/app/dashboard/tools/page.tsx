@@ -133,7 +133,7 @@ export default function ToolsPage() {
 
                 {recommendations && (
                     <div className="p-6 border-2 border-primary/20 rounded-lg bg-primary/5 animate-in fade-in-50 duration-500">
-                        <h3 className="text-lg font-semibold mb-4">AI Recommendations (Step 2: Select a Crop)</h3>
+                        <h3 className="text-lg font-semibold mb-4">Step 2: Select a Crop to Analyze</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {recommendations.map(rec => {
                                 const emoji = cropEmojis[rec.cropName.toLowerCase()] || cropEmojis['default'];
