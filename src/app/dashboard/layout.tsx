@@ -68,7 +68,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       enableSystem
       disableTransitionOnChange
     >
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={false}>
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg">
