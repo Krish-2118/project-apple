@@ -90,6 +90,9 @@ export default function ToolsPage() {
     params.set('crop', cropName);
     params.set('state', formValues.state);
     params.set('soilType', formValues.soilType);
+    params.set('rainfall', formValues.rainfall.toString());
+    params.set('temperature', formValues.temperature.toString());
+    params.set('ph', formValues.ph.toString());
     router.push(`/dashboard/tools/prediction?${params.toString()}`);
   }
 
