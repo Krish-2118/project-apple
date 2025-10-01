@@ -1,15 +1,11 @@
 'use server';
 
 /**
- * @fileOverview An AI agent that provides actionable advice and timely alerts based on weather forecasts for farmers.
- *
- * - generateAgriculturalAlert - A function that generates agricultural alerts based on weather forecasts.
- * - AgriculturalAlertInput - The input type for the generateAgriculturalAlert function.
- * - AgriculturalAlertOutput - The return type for the generateAgriculturalAlert function.
+ * @fileOverview Agricultural alerts flow for project-apple
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 
 const AgriculturalAlertInputSchema = z.object({
   weatherForecast: z.string().describe('The weather forecast for the next few days.'),
@@ -21,14 +17,10 @@ const AgriculturalAlertOutputSchema = z.object({
 });
 export type AgriculturalAlertOutput = z.infer<typeof AgriculturalAlertOutputSchema>;
 
-export async function generateAgriculturalAlert(input: AgriculturalAlertInput): Promise<AgriculturalAlertOutput> {
-  return agriculturalAlertFlow(input);
-}
-
 const prompt = ai.definePrompt({
   name: 'agriculturalAlertPrompt',
-  input: {schema: AgriculturalAlertInputSchema},
-  output: {schema: AgriculturalAlertOutputSchema},
+  input: { schema: AgriculturalAlertInputSchema },
+  output: { schema: AgriculturalAlertOutputSchema },
   prompt: `You are an AI assistant providing actionable advice to farmers based on weather forecasts.
   Given the following weather forecast, provide a single, concise alert or advice to help them make informed decisions about their farming practices.
 
@@ -45,7 +37,11 @@ const agriculturalAlertFlow = ai.defineFlow(
     outputSchema: AgriculturalAlertOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const { output } = await prompt(input);
     return output!;
   }
 );
+
+export async function generateAgriculturalAlert(input: AgriculturalAlertInput): Promise<AgriculturalAlertOutput> {
+  return agriculturalAlertFlow(input);
+}
