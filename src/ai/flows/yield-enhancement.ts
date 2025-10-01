@@ -1,10 +1,7 @@
 'use server';
+
 /**
- * @fileOverview An AI agent that provides tips to enhance crop yield.
- *
- * - getYieldEnhancementTips - A function that returns yield enhancement tips.
- * - YieldEnhancementInput - The input type for the getYieldEnhancementTips function.
- * - YieldEnhancementOutput - The return type for the getYieldEnhancementTips function.
+ * @fileOverview Yield enhancement tips flow for project-apple
  */
 
 import { ai } from '@/ai/genkit';
@@ -26,24 +23,6 @@ const YieldEnhancementOutputSchema = z.object({
 });
 export type YieldEnhancementOutput = z.infer<typeof YieldEnhancementOutputSchema>;
 
-const yieldEnhancementFlow = ai.defineFlow(
-  {
-    name: 'yieldEnhancementFlow',
-    inputSchema: YieldEnhancementInputSchema,
-    outputSchema: YieldEnhancementOutputSchema,
-  },
-  async input => {
-    // Simulate a short delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const { output } = await prompt(input);
-    return output!;
-  }
-);
-
-export async function getYieldEnhancementTips(input: YieldEnhancementInput): Promise<YieldEnhancementOutput> {
-  return yieldEnhancementFlow(input);
-}
-
 const prompt = ai.definePrompt({
   name: 'yieldEnhancementPrompt',
   input: { schema: YieldEnhancementInputSchema },
@@ -56,3 +35,20 @@ const prompt = ai.definePrompt({
   For each tip, provide a clear title and a concise description.
   `,
 });
+
+const yieldEnhancementFlow = ai.defineFlow(
+  {
+    name: 'yieldEnhancementFlow',
+    inputSchema: YieldEnhancementInputSchema,
+    outputSchema: YieldEnhancementOutputSchema,
+  },
+  async input => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const { output } = await prompt(input);
+    return output!;
+  }
+);
+
+export async function getYieldEnhancementTips(input: YieldEnhancementInput): Promise<YieldEnhancementOutput> {
+  return yieldEnhancementFlow(input);
+}
