@@ -1,11 +1,7 @@
 'use server';
 
 /**
- * @fileOverview An AI agent that provides market analysis for a given crop.
- *
- * - getMarketAnalysis - A function that returns market analysis.
- * - MarketAnalysisInput - The input type for the getMarketAnalysis function.
- * - MarketAnalysisOutput - The return type for the getMarketAnalysis function.
+ * @fileOverview Market analysis flow for project-apple
  */
 
 import { ai } from '@/ai/genkit';
@@ -26,24 +22,6 @@ const MarketAnalysisOutputSchema = z.object({
 });
 export type MarketAnalysisOutput = z.infer<typeof MarketAnalysisOutputSchema>;
 
-const marketAnalysisFlow = ai.defineFlow(
-  {
-    name: 'marketAnalysisFlow',
-    inputSchema: MarketAnalysisInputSchema,
-    outputSchema: MarketAnalysisOutputSchema,
-  },
-  async input => {
-    // In a real app, you might have a service to get real market data.
-    const { output } = await prompt(input);
-    return output!;
-  }
-);
-
-
-export async function getMarketAnalysis(input: MarketAnalysisInput): Promise<MarketAnalysisOutput> {
-  return marketAnalysisFlow(input);
-}
-
 const prompt = ai.definePrompt({
   name: 'marketAnalysisPrompt',
   input: { schema: MarketAnalysisInputSchema },
@@ -58,3 +36,19 @@ const prompt = ai.definePrompt({
   State: {{{state}}}
   `,
 });
+
+const marketAnalysisFlow = ai.defineFlow(
+  {
+    name: 'marketAnalysisFlow',
+    inputSchema: MarketAnalysisInputSchema,
+    outputSchema: MarketAnalysisOutputSchema,
+  },
+  async input => {
+    const { output } = await prompt(input);
+    return output!;
+  }
+);
+
+export async function getMarketAnalysis(input: MarketAnalysisInput): Promise<MarketAnalysisOutput> {
+  return marketAnalysisFlow(input);
+}
