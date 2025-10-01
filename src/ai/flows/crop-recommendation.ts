@@ -2,7 +2,6 @@
 
 /**
  * @fileOverview Hybrid crop recommendation using Random Forest ML model + Genkit AI
- * Adapted for project-apple
  */
 
 import { ai } from '@/ai/genkit';
@@ -133,4 +132,45 @@ const cropRecommendationFlow = ai.defineFlow(
 - Phosphorus: ${features.phosphorus.toFixed(0)} kg/ha
 - Potassium: ${features.potassium.toFixed(0)} kg/ha
 - Temperature: ${features.temperature.toFixed(1)}°C
-- Humidity
+- Humidity: ${features.humidity.toFixed(0)}%
+- Rainfall: ${features.rainfall.toFixed(0)} cm
+    `.trim();
+
+    // Step 5: Get AI recommendations considering ML predictions
+    const { output: aiOutput } = await prompt({
+      soilType: input.soilType,
+      state: input.state,
+      rainfall: input.rainfall,
+      temperature: input.temperature,
+      ph: input.ph,
+      mlPredictions: mlPredictionsText,
+      extractedFeatures: extractedFeaturesText,
+    });
+
+    // Step 6: Combine results and add ML confidence scores
+    const mlPredictionMap = new Map(mlPredictions.map(p => [p.crop, p.confidence]));
+
+    const enhancedRecommendations = aiOutput!.recommendations.map(recommendation => {
+      const mlConfidence = mlPredictionMap.get(recommendation.cropName.toLowerCase().split(' ')[0]);
+      const predictionSource: 'ml' | 'ai' | 'hybrid' = 
+        mlConfidence && mlConfidence > 0.3 ? 'hybrid' : 'ai';
+
+      return {
+        ...recommendation,
+        mlConfidence,
+        predictionSource,
+      };
+    });
+
+    console.log('✅ Hybrid crop recommendations generated');
+
+    return {
+      recommendations: enhancedRecommendations,
+      mlFeatures: features,
+    };
+  }
+);
+
+export async function getCropRecommendation(input: CropRecommendationInput): Promise<CropRecommendationOutput> {
+  return cropRecommendationFlow(input);
+}
